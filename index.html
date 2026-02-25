@@ -204,6 +204,10 @@ input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
 /* Responsive */
 @media(max-width:900px){:root{--sw:300px;}.mgrid{grid-template-columns:repeat(2,1fr);}.twoc{grid-template-columns:1fr;}}
 @media(max-width:660px){#shell{grid-template-columns:1fr;grid-template-rows:var(--hh) 45vh 1fr 32px;}#sidebar{grid-row:2;}#main{grid-row:3;}#footer{grid-row:4;}.mgrid{grid-template-columns:repeat(2,1fr);}}
+/* ── Language toggle ── */
+.lang-seg{display:flex;background:var(--s2);border-radius:20px;padding:2px;gap:2px;}
+.lang-btn{padding:3px 10px;border:none;border-radius:18px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--t2);background:none;transition:all .15s;letter-spacing:.2px;}
+.lang-btn.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1);}
 </style>
 </head>
 <body>
@@ -229,102 +233,107 @@ input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
     <div class="brand-name">Immo<span>nator</span></div>
   </div>
   <div class="sep"></div>
+  <div class="lang-seg">
+    <button class="lang-btn on" id="langEN" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" id="langDE" onclick="setLang('de')">DE</button>
+  </div>
   <button class="tb-chip" id="modelChip" onclick="openSettings()">
     <span class="dot gr" id="modelDot"></span>
-    <span id="chipLabel">Configure AI</span>
+    <span id="chipLabel" data-i18n="chip_configure">Configure AI</span>
   </button>
   <button id="settingsBtn" onclick="openSettings()">⚙</button>
 </header>
 
 <!-- SIDEBAR -->
 <aside id="sidebar">
-  <div class="sb-head"><div class="sb-title">Property Analysis</div><div class="sb-sub">Immonator · AfA · IRR · 20-yr projection</div></div>
+  <div class="sb-head"><div class="sb-title" data-i18n="s_title">Property Analysis</div><div class="sb-sub" data-i18n="s_sub">Immonator · AfA · IRR · 20-yr projection</div></div>
 
-  <div class="fsec"><div class="flabel">Property</div>
+  <div class="fsec"><div class="flabel" data-i18n="sec_property">Property</div>
     <div class="fgroup">
-      <div class="frow"><span class="flb">Address</span><span class="fsp"></span><input id="f_address" class="finp" type="text" value="Schönhauser Allee 36, 10435 Berlin" style="width:160px;text-align:right;font-family:inherit;font-size:12px;"></div>
+      <div class="frow"><span class="flb" data-i18n="f_address">Address</span><span class="fsp"></span><input id="f_address" class="finp" type="text" value="Schönhauser Allee 36, 10435 Berlin" style="width:160px;text-align:right;font-family:inherit;font-size:12px;"></div>
       <div class="frow tw">
-        <div class="fhalf"><span class="flb">Area</span><span class="fsp"></span><input id="f_sqm" class="finp" type="number" value="78"><span class="funit">m²</span></div>
-        <div class="fhalf"><span class="flb">Built</span><span class="fsp"></span><input id="f_yearbuilt" class="finp" type="number" value="1992" style="width:55px;"></div>
+        <div class="fhalf"><span class="flb" data-i18n="f_area">Area</span><span class="fsp"></span><input id="f_sqm" class="finp" type="number" value="78"><span class="funit">m²</span></div>
+        <div class="fhalf"><span class="flb" data-i18n="f_built">Built</span><span class="fsp"></span><input id="f_yearbuilt" class="finp" type="number" value="1992" style="width:55px;"></div>
       </div>
-      <div class="frow"><span class="flb">Condition</span><span class="fsp"></span>
+      <div class="frow"><span class="flb" data-i18n="f_condition">Condition</span><span class="fsp"></span>
         <select id="f_condition" class="fsel">
-          <option value="existing">Existing building</option>
-          <option value="existing">Partially renovated</option>
-          <option value="newbuild">New build (5% AfA)</option>
+          <option value="existing" data-i18n="opt_existing">Existing building</option>
+          <option value="existing" data-i18n="opt_partial">Partially renovated</option>
+          <option value="newbuild" data-i18n="opt_newbuild">New build (5% AfA)</option>
         </select>
       </div>
     </div>
   </div>
 
-  <div class="fsec"><div class="flabel">Financing</div>
+  <div class="fsec"><div class="flabel" data-i18n="sec_financing">Financing</div>
     <div class="fgroup">
-      <div class="frow"><span class="flb">Purchase price</span><span class="fsp"></span><input id="f_price" class="finp" type="number" value="420000"><span class="funit">€</span></div>
+      <div class="frow"><span class="flb" data-i18n="f_price">Purchase price</span><span class="fsp"></span><input id="f_price" class="finp" type="number" value="420000"><span class="funit">€</span></div>
       <div class="frow" style="align-items:center;">
-        <span class="flb">Bank financed</span><span class="fsp"></span>
+        <span class="flb" data-i18n="f_financed">Bank financed</span><span class="fsp"></span>
         <label class="tog"><input type="checkbox" id="f_financed" checked><span class="tog-sl"></span></label>
       </div>
       <div id="fin_rows">
         <div class="frow tw">
-          <div class="fhalf"><span class="flb">Equity</span><span class="fsp"></span><input id="f_equity" class="finp" type="number" value="100000"><span class="funit">€</span></div>
-          <div class="fhalf"><span class="flb">Interest</span><span class="fsp"></span><input id="f_interest" class="finp" type="number" value="3.8" step="0.1" style="width:40px;"><span class="funit">%</span></div>
+          <div class="fhalf"><span class="flb" data-i18n="f_equity">Equity</span><span class="fsp"></span><input id="f_equity" class="finp" type="number" value="100000"><span class="funit">€</span></div>
+          <div class="fhalf"><span class="flb" data-i18n="f_interest">Interest</span><span class="fsp"></span><input id="f_interest" class="finp" type="number" value="3.8" step="0.1" style="width:40px;"><span class="funit">%</span></div>
         </div>
         <div class="frow tw">
-          <div class="fhalf"><span class="flb">Repayment</span><span class="fsp"></span><input id="f_repayment" class="finp" type="number" value="2.0" step="0.1" style="width:40px;"><span class="funit">%</span></div>
+          <div class="fhalf"><span class="flb" data-i18n="f_repayment">Repayment</span><span class="fsp"></span><input id="f_repayment" class="finp" type="number" value="2.0" step="0.1" style="width:40px;"><span class="funit">%</span></div>
         </div>
       </div>
       <div class="frow tw">
         <div class="fhalf"><span class="flb">GrESt</span><span class="fsp"></span><input id="f_grunderwerb" class="finp" type="number" value="6.0" step="0.5" style="width:40px;"><span class="funit">%</span></div>
-        <div class="fhalf"><span class="flb">Notary</span><span class="fsp"></span><input id="f_notary" class="finp" type="number" value="2.0" step="0.1" style="width:40px;"><span class="funit">%</span></div>
+        <div class="fhalf"><span class="flb" data-i18n="f_notary">Notary</span><span class="fsp"></span><input id="f_notary" class="finp" type="number" value="2.0" step="0.1" style="width:40px;"><span class="funit">%</span></div>
       </div>
       <div class="frow tw">
-        <div class="fhalf"><span class="flb">Land share</span><span class="fsp"></span><input id="f_landshare" class="finp" type="number" value="20" step="5" style="width:40px;"><span class="funit">%</span></div>
+        <div class="fhalf"><span class="flb" data-i18n="f_landshare">Land share</span><span class="fsp"></span><input id="f_landshare" class="finp" type="number" value="20" step="5" style="width:40px;"><span class="funit">%</span></div>
+        <div class="fhalf"><span class="flb" data-i18n="f_agent">Makler</span><span class="fsp"></span><input id="f_agent" class="finp" type="number" value="0" min="0" max="5" step="0.5" style="width:40px;"><span class="funit">%</span></div>
       </div>
     </div>
   </div>
 
-  <div class="fsec"><div class="flabel">Income & Costs</div>
+  <div class="fsec"><div class="flabel" data-i18n="sec_income">Income & Costs</div>
     <div class="fgroup">
       <div class="frow">
-        <span class="flb">Cold rent</span><span class="fsp"></span>
-        <input id="f_rent" class="finp" type="number" value="1420"><span class="funit">€/mo</span>
+        <span class="flb" data-i18n="f_rent">Cold rent</span><span class="fsp"></span>
+        <input id="f_rent" class="finp" type="number" value="1420"><span class="funit" data-i18n="unit_euro_mo">€/mo</span>
       </div>
       <div class="frow">
         <span class="flb">Hausgeld</span><span class="fsp"></span>
-        <input id="f_hausgeld" class="finp" type="number" value="200"><span class="funit">€/mo</span>
+        <input id="f_hausgeld" class="finp" type="number" value="200"><span class="funit" data-i18n="unit_euro_mo">€/mo</span>
       </div>
       <div class="frow">
-        <span class="flb">Maintenance</span><span class="fsp"></span>
-        <input id="f_maintenance" class="finp" type="number" value="1200"><span class="funit">€/yr</span>
+        <span class="flb" data-i18n="f_maintenance">Maintenance</span><span class="fsp"></span>
+        <input id="f_maintenance" class="finp" type="number" value="1200"><span class="funit" data-i18n="unit_euro_yr">€/yr</span>
       </div>
       <div class="frow">
-        <span class="flb">Management</span><span class="fsp"></span>
-        <input id="f_management" class="finp" type="number" value="600"><span class="funit">€/yr</span>
+        <span class="flb" data-i18n="f_management">Management</span><span class="fsp"></span>
+        <input id="f_management" class="finp" type="number" value="600"><span class="funit" data-i18n="unit_euro_yr">€/yr</span>
       </div>
     </div>
   </div>
 
-  <div class="fsec"><div class="flabel">Assumptions</div>
+  <div class="fsec"><div class="flabel" data-i18n="sec_assumptions">Assumptions</div>
     <div class="fgroup assumptions-group">
       <div class="frow tw">
-        <div class="fhalf"><span class="flb">Rent growth</span><span class="fsp"></span><input id="f_rentgrowth" class="finp" type="number" value="2.0" step="0.1" style="width:40px;"><span class="funit">%</span></div>
-        <div class="fhalf"><span class="flb">Appreciation</span><span class="fsp"></span><input id="f_appreciation" class="finp" type="number" value="2.0" step="0.1" style="width:40px;"><span class="funit">%</span></div>
+        <div class="fhalf"><span class="flb" data-i18n="f_rentgrowth">Rent growth</span><span class="fsp"></span><input id="f_rentgrowth" class="finp" type="number" value="2.0" step="0.1" style="width:40px;"><span class="funit">%</span></div>
+        <div class="fhalf"><span class="flb" data-i18n="f_appreciation">Appreciation</span><span class="fsp"></span><input id="f_appreciation" class="finp" type="number" value="2.0" step="0.1" style="width:40px;"><span class="funit">%</span></div>
       </div>
       <div class="frow tw">
-        <div class="fhalf"><span class="flb">Tax rate</span><span class="fsp"></span><input id="f_taxrate" class="finp" type="number" value="44" step="1" style="width:40px;"><span class="funit">%</span></div>
-        <div class="fhalf"><span class="flb">Horizon</span><span class="fsp"></span><input id="f_horizon" class="finp" type="number" value="10" style="width:40px;"><span class="funit">yr</span></div>
+        <div class="fhalf"><span class="flb" data-i18n="f_taxrate">Tax rate</span><span class="fsp"></span><input id="f_taxrate" class="finp" type="number" value="44" step="1" style="width:40px;"><span class="funit">%</span></div>
+        <div class="fhalf"><span class="flb" data-i18n="f_horizon">Horizon</span><span class="fsp"></span><input id="f_horizon" class="finp" type="number" value="10" style="width:40px;"><span class="funit" data-i18n="unit_yr">yr</span></div>
       </div>
       <!-- AfA rate slider — single, canonical control -->
       <div class="frow stack">
         <div class="afa-line">
-          <span class="flb afa-label">AfA rate (§7 EStG)</span><span class="fsp"></span>
+          <span class="flb afa-label" data-i18n="f_afa_lbl">AfA rate (§7 EStG)</span><span class="fsp"></span>
           <input id="f_afa_rate" type="range" min="0" max="7" step="0.1" value="2.0" style="flex:1;">
           <span class="afa-value" id="f_afa_rate_value">2.0%</span>
         </div>
       </div>
       <!-- Vacancy -->
       <div class="frow" style="flex-direction:column;align-items:stretch;gap:8px;">
-        <span class="flb">Vacancy</span>
+        <span class="flb" data-i18n="f_vacancy">Vacancy</span>
         <div class="seg">
           <input type="radio" name="vac" id="v1" checked><label for="v1">1%</label>
           <input type="radio" name="vac" id="v3"><label for="v3">3%</label>
@@ -332,35 +341,30 @@ input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
           <input type="radio" name="vac" id="v8"><label for="v8">8%</label>
         </div>
       </div>
-      <!-- FIX 1 & 2: Single canonical Sonder-AfA toggle + expanded block.
-           Removed the duplicate frow tw and duplicate number-input frow stack that
-           appeared further down and shared the same IDs. -->
       <div class="frow">
         <span class="flb">Sonder-AfA</span><span class="fsp"></span>
         <input id="f_special_afa_enabled" type="checkbox">
       </div>
-      <!-- FIX 4: Changed display style from flex to block so the inner stack layout works correctly -->
       <div id="specialAfaBlock" class="frow stack" style="display:none;">
-        <div class="fhint" style="color:var(--blue);">§7b EStG — flat annual deduction for years 1–N, always linear regardless of AfA method above.</div>
+        <div class="fhint" style="color:var(--blue);" data-i18n="f_safa_hint">§7b EStG — flat annual deduction for years 1–N, always linear regardless of AfA method above.</div>
         <div class="afa-line">
           <span class="flb afa-label">Sonder-AfA rate</span><span class="fsp"></span>
           <input id="f_special_afa_rate" type="range" min="0" max="7" step="0.1" value="0" style="flex:1;">
           <span class="afa-value" id="f_special_afa_rate_value">0.0%</span>
         </div>
         <div class="afa-line" style="margin-top:4px;">
-          <span class="flb">Years (max 4)</span><span class="fsp"></span>
+          <span class="flb" data-i18n="f_safa_years">Years (max 4)</span><span class="fsp"></span>
           <input id="f_special_afa_years" class="finp" type="number" value="4" min="1" max="4" step="1" style="width:72px;">
-          <span class="funit">yr</span>
+          <span class="funit" data-i18n="unit_yr">yr</span>
         </div>
-        <!-- FIX 5: Renamed to match the JS getElementById call -->
-        <div class="ferr" id="f_special_afa_error">Sonder-AfA years must be between 1 and 4.</div>
+        <div class="ferr" id="f_special_afa_error" data-i18n="f_safa_err">Sonder-AfA years must be between 1 and 4.</div>
       </div>
     </div>
   </div>
 
   <button class="btn-go" onclick="runAnalysis()">
-    Analyse Now
-    <span class="mbadge" id="btnBadge">Instant</span>
+    <span data-i18n="btn_analyse">Analyse Now</span>
+    <span class="mbadge" id="btnBadge" data-i18n="chip_instant">Instant</span>
   </button>
 </aside>
 
@@ -377,8 +381,8 @@ input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
         <rect x="13" y="22.5" width="6" height="5.5" rx="0.8" fill="#0071e3"/>
       </svg>
     </div>
-    <div class="et">Ready to Analyse</div>
-    <div class="ed">Fill in the property details, then click Analyse. Get AfA tax savings, IRR projections, and optional AI commentary.</div>
+    <div class="et" data-i18n="es_title">Ready to Analyse</div>
+    <div class="ed" data-i18n="es_desc">Fill in the property details, then click Analyse. Get AfA tax savings, IRR projections, and optional AI commentary.</div>
     <div class="chips">
       <span class="chip">AfA §7 EStG</span><span class="chip">IRR 10/15/20yr</span>
       <span class="chip">Bodenrichtwert</span><span class="chip">Mietspiegel</span>
@@ -388,10 +392,10 @@ input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
 
   <div id="resultsContent">
     <div class="tabs">
-      <button class="tab on" onclick="sw(this,'ov')">Overview</button>
-      <button class="tab" onclick="sw(this,'pr')">Projections</button>
-      <button class="tab" onclick="sw(this,'ai')">AI Analysis</button>
-      <button class="tab" onclick="sw(this,'mk')">Market Data</button>
+      <button class="tab on" onclick="sw(this,'ov')" data-i18n="tab_overview">Overview</button>
+      <button class="tab" onclick="sw(this,'pr')" data-i18n="tab_projections">Projections</button>
+      <button class="tab" onclick="sw(this,'ai')" data-i18n="tab_ai">AI Analysis</button>
+      <button class="tab" onclick="sw(this,'mk')" data-i18n="tab_market">Market Data</button>
     </div>
 
     <!-- OVERVIEW -->
@@ -405,30 +409,30 @@ input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
           <div class="ring-num" id="scoreNum">—<small>/10</small></div>
         </div>
         <div class="hero-body">
-          <div class="vey">Investment Verdict</div>
+          <div class="vey" data-i18n="verdict_label">Investment Verdict</div>
           <div class="vt" id="verdictTitle">—</div>
           <div class="vs" id="verdictSummary"></div>
         </div>
       </div>
 
       <div class="mgrid">
-        <div class="mc"><div class="mv" id="mv_ny">—</div><div class="ml">Net Rental Yield</div><div class="mb">Benchmark 3.2%</div></div>
-        <div class="mc"><div class="mv" id="mv_kpf">—</div><div class="ml">Kaufpreisfaktor</div><div class="mb">Target &lt;25×</div></div>
-        <div class="mc"><div class="mv" id="mv_irr">—</div><div class="ml">IRR 10 yr</div><div class="mb">Target &gt;5%</div></div>
-        <div class="mc"><div class="mv" id="mv_cf">—</div><div class="ml">Cash Flow/Mo Yr1</div><div class="mb">After tax &amp; debt</div></div>
-        <div class="mc"><div class="mv" id="mv_ltv">—</div><div class="ml">Loan-to-Value</div><div class="mb">Bank limit 80%</div></div>
-        <div class="mc"><div class="mv" id="mv_afa">—</div><div class="ml">AfA Tax Saving/yr</div><div class="mb" id="mb_afa">—</div></div>
-        <div class="mc"><div class="mv" id="mv_ann">—</div><div class="ml">Monthly Annuity</div><div class="mb">Principal+interest</div></div>
-        <div class="mc"><div class="mv" id="mv_nk">—</div><div class="ml">Closing Costs</div><div class="mb" id="mb_nk">—</div></div>
+        <div class="mc"><div class="mv" id="mv_ny">—</div><div class="ml" data-i18n="mc_ny_lbl">Net Rental Yield</div><div class="mb" data-i18n="mc_ny_bm">Benchmark 3.2%</div></div>
+        <div class="mc"><div class="mv" id="mv_kpf">—</div><div class="ml" data-i18n="mc_kpf_lbl">Kaufpreisfaktor</div><div class="mb" data-i18n="mc_kpf_bm">Target &lt;25×</div></div>
+        <div class="mc"><div class="mv" id="mv_irr">—</div><div class="ml" data-i18n="mc_irr_lbl">IRR 10 yr</div><div class="mb" data-i18n="mc_irr_bm">Target &gt;5%</div></div>
+        <div class="mc"><div class="mv" id="mv_cf">—</div><div class="ml" data-i18n="mc_cf_lbl">Cash Flow/Mo Yr1</div><div class="mb" data-i18n="mc_cf_bm">After tax &amp; debt</div></div>
+        <div class="mc"><div class="mv" id="mv_ltv">—</div><div class="ml" data-i18n="mc_ltv_lbl">Loan-to-Value</div><div class="mb" data-i18n="mc_ltv_bm">Bank limit 80%</div></div>
+        <div class="mc"><div class="mv" id="mv_afa">—</div><div class="ml" data-i18n="mc_afa_lbl">AfA Tax Saving/yr</div><div class="mb" id="mb_afa">—</div></div>
+        <div class="mc"><div class="mv" id="mv_ann">—</div><div class="ml" data-i18n="mc_ann_lbl">Monthly Annuity</div><div class="mb" data-i18n="mc_ann_bm">Principal+interest</div></div>
+        <div class="mc"><div class="mv" id="mv_nk">—</div><div class="ml" data-i18n="mc_nk_lbl">Closing Costs</div><div class="mb" id="mb_nk">—</div></div>
       </div>
 
       <div class="twoc">
         <div class="card">
-          <div class="ch"><span class="ct">Annual Cash Flow</span><span class="ctag">Base Case</span></div>
+          <div class="ch"><span class="ct" data-i18n="card_cashflow">Annual Cash Flow</span><span class="ctag" data-i18n="tag_basecase">Base Case</span></div>
           <div class="cb"><div class="bw" id="barChart"></div></div>
         </div>
         <div class="card">
-          <div class="ch"><span class="ct">Investment Flags</span></div>
+          <div class="ch"><span class="ct" data-i18n="card_flags">Investment Flags</span></div>
           <div class="flist" id="flagsList"></div>
         </div>
       </div>
@@ -437,23 +441,23 @@ input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
     <!-- PROJECTIONS -->
     <div class="tpanel" id="tp-pr">
       <div class="card">
-        <div class="ch"><span class="ct">Returns at Exit Horizons</span><span class="ctag">IRR &amp; Equity Multiple</span></div>
-        <table class="dt"><thead><tr><th>Horizon</th><th>IRR</th><th>Equity Multiple</th><th>Net Gain on Equity</th></tr></thead><tbody id="irrTable"></tbody></table>
+        <div class="ch"><span class="ct" data-i18n="card_returns">Returns at Exit Horizons</span><span class="ctag" data-i18n="tag_irr">IRR &amp; Equity Multiple</span></div>
+        <table class="dt"><thead><tr><th data-i18n="th_horizon">Horizon</th><th>IRR</th><th data-i18n="th_em">Equity Multiple</th><th data-i18n="th_gain">Net Gain on Equity</th></tr></thead><tbody id="irrTable"></tbody></table>
       </div>
       <div class="card">
-        <div class="ch"><span class="ct">Year-by-Year Overview</span><span class="ctag">Base Case</span></div>
+        <div class="ch"><span class="ct" data-i18n="card_detail">Year-by-Year Overview</span><span class="ctag" data-i18n="tag_basecase">Base Case</span></div>
         <table class="dt">
-          <thead><tr><th>Year</th><th>Gross Rent</th><th>Interest</th><th>AfA (reg.)</th><th>Sonder-AfA</th><th>Tax Impact</th><th>Cash Flow</th><th>Property Value</th></tr></thead>
+          <thead><tr><th data-i18n="th_year">Year</th><th data-i18n="th_rent">Gross Rent</th><th data-i18n="th_interest">Interest</th><th data-i18n="th_afa">AfA (reg.)</th><th>Sonder-AfA</th><th data-i18n="th_tax">Tax Impact</th><th data-i18n="th_cf">Cash Flow</th><th data-i18n="th_pv">Property Value</th></tr></thead>
           <tbody id="detailTable"></tbody>
         </table>
-        <div class="note">📌 Positive tax impact = refund (Werbungskostenüberschuss). AfA basis excludes land share.</div>
+        <div class="note" data-i18n="note_proj">📌 Positive tax impact = refund (Werbungskostenüberschuss). AfA basis excludes land share.</div>
       </div>
     </div>
 
     <!-- AI ANALYSIS -->
     <div class="tpanel" id="tp-ai">
       <div class="card">
-        <div class="ch"><span class="ct">Expert Analysis</span><span class="ctag" id="aiBadge">—</span></div>
+        <div class="ch"><span class="ct" data-i18n="card_ai">Expert Analysis</span><span class="ctag" id="aiBadge">—</span></div>
         <div class="aitext" id="aiText">Switch to AI Powered mode in ⚙ Settings to get an expert narrative on this property.</div>
       </div>
     </div>
@@ -461,12 +465,12 @@ input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
     <!-- MARKET DATA -->
     <div class="tpanel" id="tp-mk">
       <div class="card" style="margin-bottom:12px;">
-        <div class="ch"><span class="ct">Live Market Data</span><span class="ctag" id="mktBadge">—</span></div>
+        <div class="ch"><span class="ct" data-i18n="card_market">Live Market Data</span><span class="ctag" id="mktBadge">—</span></div>
         <div class="mgrd" id="mktGrid"></div>
       </div>
       <div class="card">
-        <div class="ch"><span class="ct">AfA Depreciation Summary</span></div>
-        <table class="dt"><thead><tr><th>Parameter</th><th>Value</th><th>Note</th></tr></thead><tbody id="afaBody"></tbody></table>
+        <div class="ch"><span class="ct" data-i18n="card_afa_summary">AfA Depreciation Summary</span></div>
+        <table class="dt"><thead><tr><th data-i18n="th_param">Parameter</th><th data-i18n="th_value">Value</th><th data-i18n="th_note">Note</th></tr></thead><tbody id="afaBody"></tbody></table>
       </div>
     </div>
   </div>
@@ -474,8 +478,8 @@ input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
   <!-- Loading -->
   <div id="loadingOverlay">
     <div class="lcard">
-      <div class="ltitle">Analysing…</div>
-      <div class="lstep" id="lstep">Starting…</div>
+      <div class="ltitle" data-i18n="loading_title">Analysing…</div>
+      <div class="lstep" id="lstep" data-i18n="loading_start">Starting…</div>
       <div class="ltrack"><div class="lfill" id="lfill"></div></div>
       <div class="ldots" id="ldots">
         <div class="ldot"></div><div class="ldot"></div><div class="ldot"></div>
@@ -496,9 +500,9 @@ input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
 <!-- SETTINGS MODAL -->
 <div class="backdrop" id="backdrop" onclick="if(event.target===this)closeSettings()">
   <div class="modal">
-    <div class="mh"><span class="mhttl">Immonator — Analysis Mode</span><button class="mclose" onclick="closeSettings()">✕</button></div>
+    <div class="mh"><span class="mhttl" data-i18n="modal_title">Immonator — Analysis Mode</span><button class="mclose" onclick="closeSettings()">✕</button></div>
     <div class="mbody">
-      <div class="mseclabel">Choose Analysis Mode</div>
+      <div class="mseclabel" data-i18n="modal_sec">Choose Analysis Mode</div>
 
       <div class="mopt" id="opt_local" onclick="selModel('local')">
         <div class="micon">
@@ -510,8 +514,8 @@ input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
           </svg>
         </div>
         <div class="minfo">
-          <div class="mname">Instant</div>
-          <div class="mdesc">Pure calculations — AfA, IRR, cash flow and all projections computed instantly in your browser. No internet required after load.</div>
+          <div class="mname" data-i18n="mode_instant">Instant</div>
+          <div class="mdesc" data-i18n="mode_instant_desc">Pure calculations — AfA, IRR, cash flow and all projections computed instantly in your browser. No internet required after load.</div>
         </div>
         <div class="mradio" id="r_local"></div>
       </div>
@@ -527,20 +531,179 @@ input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
           </svg>
         </div>
         <div class="minfo">
-          <div class="mname">AI Powered</div>
-          <div class="mdesc">All calculations plus an expert AI narrative — market context, risk flags, and a plain-English Buy / Hold / Avoid verdict written by our custom intelligent analyst.</div>
+          <div class="mname" data-i18n="mode_ai">AI Powered</div>
+          <div class="mdesc" data-i18n="mode_ai_desc">All calculations plus an expert AI narrative — market context, risk flags, and a plain-English Buy / Hold / Avoid verdict written by our custom intelligent analyst.</div>
         </div>
         <div class="mradio" id="r_claude"></div>
       </div>
     </div>
     <div class="mfoot">
-      <button class="bts" onclick="closeSettings()">Cancel</button>
-      <button class="btp" onclick="saveSettings()">Save</button>
+      <button class="bts" onclick="closeSettings()" data-i18n="btn_cancel">Cancel</button>
+      <button class="btp" onclick="saveSettings()" data-i18n="btn_save">Save</button>
     </div>
   </div>
 </div>
 
 <script>
+// ═══════════════════════════ I18N ═════════════════════════════════════════
+let lang = 'en';
+let lastResult = null, lastParams = null;
+
+const T = {
+  en: {
+    s_title:'Property Analysis', s_sub:'Immonator · AfA · IRR · 20-yr projection',
+    sec_property:'Property', sec_financing:'Financing', sec_income:'Income & Costs', sec_assumptions:'Assumptions',
+    f_address:'Address', f_area:'Area', f_built:'Built', f_condition:'Condition',
+    opt_existing:'Existing building', opt_partial:'Partially renovated', opt_newbuild:'New build (5% AfA)',
+    f_price:'Purchase price', f_financed:'Bank financed', f_equity:'Equity', f_interest:'Interest',
+    f_repayment:'Repayment', f_notary:'Notary', f_landshare:'Land share', f_agent:'Makler',
+    f_rent:'Cold rent', f_maintenance:'Maintenance', f_management:'Management',
+    f_rentgrowth:'Rent growth', f_appreciation:'Appreciation', f_taxrate:'Tax rate', f_horizon:'Horizon',
+    f_afa_lbl:'AfA rate (§7 EStG)', f_vacancy:'Vacancy', f_safa_years:'Years (max 4)',
+    f_safa_hint:'§7b EStG — flat annual deduction for years 1–N, always linear regardless of AfA method above.',
+    f_safa_err:'Sonder-AfA years must be between 1 and 4.',
+    unit_euro_mo:'€/mo', unit_euro_yr:'€/yr', unit_yr:'yr',
+    btn_analyse:'Analyse Now', chip_instant:'Instant', chip_configure:'Configure AI', chip_ai:'AI Powered',
+    es_title:'Ready to Analyse',
+    es_desc:'Fill in the property details, then click Analyse. Get AfA tax savings, IRR projections, and optional AI commentary.',
+    tab_overview:'Overview', tab_projections:'Projections', tab_ai:'AI Analysis', tab_market:'Market Data',
+    verdict_label:'Investment Verdict',
+    mc_ny_lbl:'Net Rental Yield', mc_ny_bm:'Benchmark 3.2%',
+    mc_kpf_lbl:'Kaufpreisfaktor', mc_kpf_bm:'Target <25×',
+    mc_irr_lbl:'IRR 10 yr', mc_irr_bm:'Target >5%',
+    mc_cf_lbl:'Cash Flow/Mo Yr1', mc_cf_bm:'After tax & debt',
+    mc_ltv_lbl:'Loan-to-Value', mc_ltv_bm:'Bank limit 80%',
+    mc_afa_lbl:'AfA Tax Saving/yr', mc_ann_lbl:'Monthly Annuity', mc_ann_bm:'Principal+interest', mc_nk_lbl:'Closing Costs',
+    card_cashflow:'Annual Cash Flow', tag_basecase:'Base Case', card_flags:'Investment Flags',
+    card_returns:'Returns at Exit Horizons', tag_irr:'IRR & Equity Multiple',
+    card_detail:'Year-by-Year Overview',
+    th_horizon:'Horizon', th_em:'Equity Multiple', th_gain:'Net Gain on Equity',
+    th_year:'Year', th_rent:'Gross Rent', th_interest:'Interest', th_afa:'AfA (reg.)',
+    th_tax:'Tax Impact', th_cf:'Cash Flow', th_pv:'Property Value',
+    th_param:'Parameter', th_value:'Value', th_note:'Note',
+    note_proj:'📌 Positive tax impact = refund (Werbungskostenüberschuss). AfA basis excludes land share.',
+    card_ai:'Expert Analysis', card_market:'Live Market Data', card_afa_summary:'AfA Depreciation Summary',
+    loading_title:'Analysing…', loading_start:'Starting…',
+    modal_title:'Immonator — Analysis Mode', modal_sec:'Choose Analysis Mode',
+    mode_instant:'Instant', mode_instant_desc:'Pure calculations — AfA, IRR, cash flow and all projections computed instantly in your browser. No internet required after load.',
+    mode_ai:'AI Powered', mode_ai_desc:'All calculations plus an expert AI narrative — market context, risk flags, and a plain-English Buy / Hold / Avoid verdict written by our custom intelligent analyst.',
+    btn_cancel:'Cancel', btn_save:'Save',
+    // Verdicts & dynamic
+    v_strong_buy:'Strong Buy', v_buy:'Buy', v_hold:'Hold / Review', v_caution:'Caution', v_avoid:'Avoid',
+    vs_net_yield:'Net yield', vs_kpf:'Kaufpreisfaktor', vs_irr:'IRR', vs_afa_saving:'AfA tax saving', vs_cf:'CF', vs_ltv:'LTV',
+    vs_yr:'yr', vs_mo:'/mo', vs_years:'years', vs_na:'N/A', vs_cash_purchase:'Cash purchase',
+    vs_no_leverage:'Cash purchase — no leverage, full equity investment',
+    fl_kpf_fair:'fair value', fl_kpf_high:'above 25× threshold',
+    fl_yield_ok:'Net yield {v} exceeds 3.5% target', fl_yield_warn:'Net yield {v} — below 3.5% target', fl_yield_bad:'Net yield {v} — significantly below market',
+    fl_cf:'Yr 1 cash flow: {sign}€{v}/mo after tax', fl_cf_debt:' & debt service',
+    fl_ltv_ok:'within bank limits', fl_ltv_bad:'exceeds 80% limit',
+    fl_afa:'AfA €{afa}/yr → €{saving} tax saving yr 1',
+    fl_rent:'Rent €{r}/m² vs market €{m}/m²',
+    afa_price:'Purchase price', afa_closing:'Closing costs', afa_land:'Land value (excl.)', afa_basis:'AfA basis',
+    afa_closing_note:'Price + Closing − Land', afa_rate:'Regular AfA rate', afa_newbuild:'§7 EStG new build',
+    afa_existing:'§7 EStG existing building', afa_annual:'Regular AfA / yr', afa_annual_note:'Deductible each year (all years)',
+    afa_sonder_rate:'Sonder-AfA rate', afa_sonder_note:'§7b EStG — flat annual bonus', afa_sonder_annual:'Sonder-AfA / yr',
+    afa_total:'Total AfA yr 1–', afa_total_note:'Regular + Sonder-AfA combined',
+    afa_taxrate:'Tax rate', afa_taxrate_note:'Marginal rate incl. Solidaritätszuschlag',
+    afa_saving:'Tax saving yr1', afa_saving_note:'If income negative (Werbungskostenüberschuss)',
+    mk_bodenrichtwert:'Bodenrichtwert', mk_bodenrichtwert_note:'Official land value',
+    mk_rent_index:'Rent Index', mk_rent_note:'Mietspiegel',
+    mk_mortgage:'Mortgage Rate', mk_mortgage_note:'Bundesbank 10yr',
+    mk_location:'Location Score', mk_location_note:'OSM amenity score',
+    mk_population:'Population Trend', mk_population_note:'Annual growth',
+    mk_address:'Address', mk_address_note:'Geocoded',
+    irr_years:'{n} years',
+    ai_placeholder:'Switch to AI Powered mode in ⚙ Settings to get an expert narrative on this property.',
+    steps:['Computing closing costs…','Building AfA schedule…','Running amortisation table…','Calculating taxable income…','Computing IRR…','Calling AI model…'],
+  },
+  de: {
+    s_title:'Immobilienanalyse', s_sub:'Immonator · AfA · IRR · 20-Jahres-Projektion',
+    sec_property:'Objekt', sec_financing:'Finanzierung', sec_income:'Einnahmen & Kosten', sec_assumptions:'Annahmen',
+    f_address:'Adresse', f_area:'Fläche', f_built:'Baujahr', f_condition:'Zustand',
+    opt_existing:'Bestandsgebäude', opt_partial:'Teilsaniert', opt_newbuild:'Neubau (5% AfA)',
+    f_price:'Kaufpreis', f_financed:'Bankfinanziert', f_equity:'Eigenkapital', f_interest:'Zinssatz',
+    f_repayment:'Tilgung', f_notary:'Notar', f_landshare:'Grundstücksanteil', f_agent:'Makler',
+    f_rent:'Kaltmiete', f_maintenance:'Instandhaltung', f_management:'Verwaltung',
+    f_rentgrowth:'Mietsteigerung', f_appreciation:'Wertsteigerung', f_taxrate:'Steuersatz', f_horizon:'Zeithorizont',
+    f_afa_lbl:'AfA-Satz (§7 EStG)', f_vacancy:'Leerstand', f_safa_years:'Jahre (max. 4)',
+    f_safa_hint:'§7b EStG — pauschaler Jahresbetrag für Jahre 1–N, immer linear unabhängig von der AfA-Methode.',
+    f_safa_err:'Sonder-AfA-Jahre müssen zwischen 1 und 4 liegen.',
+    unit_euro_mo:'€/Mo.', unit_euro_yr:'€/J.', unit_yr:'J.',
+    btn_analyse:'Jetzt analysieren', chip_instant:'Sofort', chip_configure:'KI konfigurieren', chip_ai:'KI-gestützt',
+    es_title:'Bereit zur Analyse',
+    es_desc:'Objektdaten eingeben und auf Analysieren klicken. AfA-Steuervorteile, IRR-Projektionen und optionale KI-Kommentare.',
+    tab_overview:'Übersicht', tab_projections:'Projektionen', tab_ai:'KI-Analyse', tab_market:'Marktdaten',
+    verdict_label:'Anlagebewertung',
+    mc_ny_lbl:'Nettomietrendite', mc_ny_bm:'Benchmark 3,2%',
+    mc_kpf_lbl:'Kaufpreisfaktor', mc_kpf_bm:'Ziel <25×',
+    mc_irr_lbl:'IRR 10 J.', mc_irr_bm:'Ziel >5%',
+    mc_cf_lbl:'Cashflow/Mo. J1', mc_cf_bm:'Nach Steuern & Schulden',
+    mc_ltv_lbl:'Beleihungsquote', mc_ltv_bm:'Banklimit 80%',
+    mc_afa_lbl:'AfA-Steuervorteil/J.', mc_ann_lbl:'Monatliche Annuität', mc_ann_bm:'Kapital+Zinsen', mc_nk_lbl:'Nebenkosten',
+    card_cashflow:'Jährlicher Cashflow', tag_basecase:'Basisszenario', card_flags:'Investitionssignale',
+    card_returns:'Renditen bei Verkaufshorizonten', tag_irr:'IRR & EK-Multiplikator',
+    card_detail:'Jahresübersicht',
+    th_horizon:'Zeithorizont', th_em:'EK-Multiplikator', th_gain:'EK-Gewinn netto',
+    th_year:'Jahr', th_rent:'Bruttomiete', th_interest:'Zinsen', th_afa:'AfA (reg.)',
+    th_tax:'Steuereffekt', th_cf:'Cashflow', th_pv:'Immobilienwert',
+    th_param:'Parameter', th_value:'Wert', th_note:'Hinweis',
+    note_proj:'📌 Positiver Steuereffekt = Erstattung (Werbungskostenüberschuss). AfA-Basis ohne Grundstücksanteil.',
+    card_ai:'Expertenanalyse', card_market:'Marktdaten live', card_afa_summary:'AfA-Abschreibungsübersicht',
+    loading_title:'Analysiere…', loading_start:'Starte…',
+    modal_title:'Immonator — Analysemodus', modal_sec:'Analysemodus wählen',
+    mode_instant:'Sofort', mode_instant_desc:'Reine Berechnungen — AfA, IRR, Cashflow und alle Projektionen werden sofort im Browser berechnet. Kein Internet nach dem Laden erforderlich.',
+    mode_ai:'KI-gestützt', mode_ai_desc:'Alle Berechnungen plus ein KI-Expertengutachten — Marktkontext, Risikohinweise und ein klares Kauf-/Halten-/Meiden-Urteil.',
+    btn_cancel:'Abbrechen', btn_save:'Speichern',
+    v_strong_buy:'Klarer Kauf', v_buy:'Kaufen', v_hold:'Halten / Prüfen', v_caution:'Vorsicht', v_avoid:'Meiden',
+    vs_net_yield:'Nettomietrendite', vs_kpf:'Kaufpreisfaktor', vs_irr:'IRR', vs_afa_saving:'AfA-Steuervorteil', vs_cf:'CF', vs_ltv:'BLQ',
+    vs_yr:'J.', vs_mo:'/Mo.', vs_years:'Jahre', vs_na:'N/V', vs_cash_purchase:'Barzahlung',
+    vs_no_leverage:'Barzahlung — kein Hebel, volles Eigenkapital',
+    fl_kpf_fair:'faire Bewertung', fl_kpf_high:'über 25× Schwelle',
+    fl_yield_ok:'Nettomietrendite {v} über 3,5%-Ziel', fl_yield_warn:'Nettomietrendite {v} — unter 3,5%-Ziel', fl_yield_bad:'Nettomietrendite {v} — deutlich unter Marktniveau',
+    fl_cf:'J1 Cashflow: {sign}€{v}/Mo. nach Steuern', fl_cf_debt:' & Schuldendienst',
+    fl_ltv_ok:'innerhalb Banklimit', fl_ltv_bad:'übersteigt 80%-Limit',
+    fl_afa:'AfA €{afa}/J. → €{saving} Steuervorteil J.1',
+    fl_rent:'Miete €{r}/m² vs. Markt €{m}/m²',
+    afa_price:'Kaufpreis', afa_closing:'Nebenkosten', afa_land:'Grundstückswert (excl.)', afa_basis:'AfA-Basis',
+    afa_closing_note:'Kaufpreis + NK − Grundstück', afa_rate:'AfA-Satz (reg.)', afa_newbuild:'§7 EStG Neubau',
+    afa_existing:'§7 EStG Bestandsgebäude', afa_annual:'AfA / Jahr (reg.)', afa_annual_note:'Jährlich absetzbar (alle Jahre)',
+    afa_sonder_rate:'Sonder-AfA-Satz', afa_sonder_note:'§7b EStG — pauschaler Jahresbonus', afa_sonder_annual:'Sonder-AfA / Jahr',
+    afa_total:'Gesamt-AfA J. 1–', afa_total_note:'Reg. + Sonder-AfA kombiniert',
+    afa_taxrate:'Steuersatz', afa_taxrate_note:'Grenzsteuersatz inkl. Solidaritätszuschlag',
+    afa_saving:'Steuervorteil J.1', afa_saving_note:'Wenn Einkommen negativ (Werbungskostenüberschuss)',
+    mk_bodenrichtwert:'Bodenrichtwert', mk_bodenrichtwert_note:'Offizieller Bodenwert',
+    mk_rent_index:'Mietindex', mk_rent_note:'Mietspiegel',
+    mk_mortgage:'Hypothekenzins', mk_mortgage_note:'Bundesbank 10 J.',
+    mk_location:'Lage-Score', mk_location_note:'OSM-Ausstattungsscore',
+    mk_population:'Bevölkerungstrend', mk_population_note:'Jährliches Wachstum',
+    mk_address:'Adresse', mk_address_note:'Geokodiert',
+    irr_years:'{n} Jahre',
+    ai_placeholder:'KI-gestützten Modus in ⚙ Einstellungen aktivieren, um ein Expertengutachten zu erhalten.',
+    steps:['Nebenkosten berechnen…','AfA-Plan erstellen…','Tilgungsplan berechnen…','Steuereinkommen berechnen…','IRR berechnen…','KI-Modell aufrufen…'],
+  }
+};
+
+function t(key, vars) {
+  const s = (T[lang] && T[lang][key]) || (T.en && T.en[key]) || key;
+  if (!vars) return s;
+  return s.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
+}
+
+function setLang(l) {
+  lang = l;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const val = (T[l] && T[l][key]) || (T.en && T.en[key]);
+    if (val !== undefined && typeof val === 'string') el.textContent = val;
+  });
+  document.getElementById('langEN').classList.toggle('on', l === 'en');
+  document.getElementById('langDE').classList.toggle('on', l === 'de');
+  updateChip();
+  if (lastResult && lastParams && document.getElementById('resultsContent').style.display !== 'none') {
+    render(lastResult, lastParams);
+  }
+}
+
 // ═══════════════════════════ CONFIG ═══════════════════════════════════════
 
 const CFGK = 'immoagent_v3';
@@ -588,9 +751,9 @@ function saveSettings() {
 }
 function updateChip() {
   const m = cfg.model||'local';
-  const lbl = m==='claude' ? 'AI Powered' : 'Instant';
+  const lbl = m==='claude' ? t('chip_ai') : t('chip_instant');
   const dotCls = m==='claude' ? 'dot' : 'dot gr';
-  document.getElementById('chipLabel').textContent = lbl;
+  document.getElementById('chipLabel').textContent = m==='claude' ? t('chip_ai') : t('chip_configure');
   document.getElementById('modelDot').className = dotCls;
   document.getElementById('btnBadge').textContent = lbl;
   document.getElementById('aiBadge').textContent  = lbl;
@@ -612,7 +775,8 @@ function calcIRR(f) {
 }
 function localCompute(p) {
   const grEst=p.purchase_price*p.transfer_tax_pct/100, notary=p.purchase_price*p.notary_pct/100;
-  const closing=grEst+notary;
+  const agent=p.purchase_price*Math.min(p.agent_pct||0,5)/100;
+  const closing=grEst+notary+agent;
   const loan=p.financed ? p.purchase_price+closing-p.equity : 0;
   const ltv=p.financed ? loan/p.purchase_price : 0;
   const landV=p.purchase_price*p.land_share_pct/100, afaBasis=p.purchase_price+closing-landV;
@@ -652,7 +816,7 @@ function localCompute(p) {
   const kpf=p.purchase_price/ar, ts=Math.abs(Math.min(0,yrs[0].taxable_income*p.tax_rate/100));
   const i10=calcIRR(iF[10]),i15=calcIRR(iF[15]),i20=calcIRR(iF[20]);
   function sc(ny,kpf,irr,cfMo,ltv){let s=0;s+=ny>=4?2.5:ny>=3?1.5:ny>=2?.8:0;s+=kpf<18?2:kpf<22?1.5:kpf<28?1:.3;s+=irr>8?2.5:irr>6?2:irr>4?1.2:.3;s+=cfMo>0?1.5:cfMo>-200?.8:0;s+=ltv<.6?1.5:ltv<.7?1:ltv<.8?.5:0;return Math.round(Math.min(10,Math.max(0,s))*10)/10;}
-  function vl(s){return s>=7.5?'Strong Buy':s>=6.5?'Buy':s>=5?'Hold / Review':s>=3.5?'Caution':'Avoid';}
+  function vl(s){return s>=7.5?t('v_strong_buy'):s>=6.5?t('v_buy'):s>=5?t('v_hold'):s>=3.5?t('v_caution'):t('v_avoid');}
   const score=sc(ny,kpf,i10,yrs[0].cash_flow/12,ltv);
   return {score,verdict:vl(score),purchase_price:p.purchase_price,equity:p.equity,loan:Math.round(loan),closing_costs:Math.round(closing),ltv_pct:ltv*100,afa_basis:Math.round(afaBasis),annual_afa:Math.round(annAfA),afa_rate_pct:afaRate*100,sonder_afa_enabled:sonderEnabled,annual_sonder_afa:Math.round(annSonderAfA),sonder_afa_rate_pct:sonderRate*100,sonder_afa_years:sonderYears,afa_tax_saving_yr1:Math.round(ts),annuity_monthly:Math.round(annMo),gross_yield_pct:gy,net_yield_pct:ny,kpf,irr_10:i10,irr_15:i15,irr_20:i20,equity_multiple_10:yrs[9]?.equity_multiple||0,equity_multiple_15:yrs[14]?.equity_multiple||0,equity_multiple_20:yrs[19]?.equity_multiple||0,cash_flow_monthly_yr1:yrs[0].cash_flow/12,year_data:yrs.filter(y=>[1,2,3,5,7,10,15,20].includes(y.year)),market_rent_m2:null,bodenrichtwert_m2:null,current_mortgage_rate:null,location_score:null,population_trend:null,ai_analysis:null,address_resolved:p.address};
 }
@@ -707,6 +871,7 @@ const sT=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
 function sM(id,val,cls=''){const e=document.getElementById(id);if(e){e.textContent=val;e.className='mv'+(cls?' '+cls:'');}}
 
 function render(d,p) {
+  lastResult=d; lastParams=p;
   const arc=document.getElementById('scoreArc');
   const off=220-(d.score/10)*208, col=d.score>=7?'#34c759':d.score>=5?'#ff9500':'#ff3b30';
   if(arc) setTimeout(()=>{arc.style.strokeDashoffset=off;arc.style.stroke=col;},100);
@@ -716,16 +881,16 @@ function render(d,p) {
   vt.textContent=d.verdict.toUpperCase();
   vt.className='vt '+(d.score>=7?'g':d.score>=5?'o':'r');
   const cfMo=d.cash_flow_monthly_yr1;
-  sT('verdictSummary',`Net yield ${fP(d.net_yield_pct)} · Kaufpreisfaktor ${fX(d.kpf)} · IRR ${fP(d.irr_10)} (10yr) · AfA €${d.afa_tax_saving_yr1.toLocaleString('de-DE')}/yr tax saving · CF ${cfMo>=0?'+':'−'}€${Math.abs(Math.round(cfMo)).toLocaleString('de-DE')}/mo`+(p.financed?` · LTV ${fP(d.ltv_pct)}`:''));
+  sT('verdictSummary',`${t('vs_net_yield')} ${fP(d.net_yield_pct)} · ${t('vs_kpf')} ${fX(d.kpf)} · ${t('vs_irr')} ${fP(d.irr_10)} (10${t('vs_yr')}) · ${t('vs_afa_saving')} €${d.afa_tax_saving_yr1.toLocaleString('de-DE')}${t('vs_mo')} · ${t('vs_cf')} ${cfMo>=0?'+':'−'}€${Math.abs(Math.round(cfMo)).toLocaleString('de-DE')}${t('vs_mo')}`+(p.financed?` · ${t('vs_ltv')} ${fP(d.ltv_pct)}`:''));
 
   sM('mv_ny',  fP(d.net_yield_pct),  d.net_yield_pct>=3.2?'ok':d.net_yield_pct>=2?'mid':'bad');
   sM('mv_kpf', fX(d.kpf),            d.kpf<22?'ok':d.kpf<28?'mid':'bad');
   sM('mv_irr', fP(d.irr_10),         d.irr_10>6?'ok':d.irr_10>4?'mid':'bad');
   sM('mv_cf',  (cfMo>=0?'+':'−')+'€'+Math.abs(Math.round(cfMo)).toLocaleString('de-DE'), cfMo>0?'ok':cfMo>-200?'mid':'bad');
-  if(p.financed){sM('mv_ltv',fP(d.ltv_pct),d.ltv_pct<80?'ok':d.ltv_pct<90?'mid':'bad');}else{sM('mv_ltv','N/A');}
+  if(p.financed){sM('mv_ltv',fP(d.ltv_pct),d.ltv_pct<80?'ok':d.ltv_pct<90?'mid':'bad');}else{sM('mv_ltv',t('vs_na'));}
   sM('mv_afa', '€'+d.afa_tax_saving_yr1.toLocaleString('de-DE'));
   sT('mb_afa', `${fP(d.afa_rate_pct)} on €${d.afa_basis.toLocaleString('de-DE')} basis`);
-  if(p.financed){sM('mv_ann','€'+d.annuity_monthly.toLocaleString('de-DE')+'/mo');}else{sM('mv_ann','Cash purchase');}
+  if(p.financed){sM('mv_ann','€'+d.annuity_monthly.toLocaleString('de-DE')+t('vs_mo'));}else{sM('mv_ann',t('vs_cash_purchase'));}
   sM('mv_nk',  fmt(d.closing_costs));
   sT('mb_nk',  fP(d.closing_costs/d.purchase_price*100)+' of purchase price');
 
@@ -738,47 +903,48 @@ function render(d,p) {
   }).join('');
 
   const fl=[];
-  fl.push([d.kpf<25?'ok':'warn',`Kaufpreisfaktor ${fX(d.kpf)} — ${d.kpf<25?'fair value':'above 25× threshold'}`]);
-  if(d.net_yield_pct>3.5) fl.push(['ok',`Net yield ${fP(d.net_yield_pct)} exceeds 3.5% target`]);
-  else if(d.net_yield_pct>2.5) fl.push(['warn',`Net yield ${fP(d.net_yield_pct)} — below 3.5% target`]);
-  else fl.push(['bad',`Net yield ${fP(d.net_yield_pct)} — significantly below market`]);
-  fl.push([cfMo>=0?'ok':'warn',`Yr 1 cash flow: ${cfMo>=0?'+':'−'}€${Math.abs(Math.round(cfMo)).toLocaleString('de-DE')}/mo after tax`+(p.financed?' & debt service':'')]);
-  if(p.financed) fl.push([d.ltv_pct<=80?'ok':'bad',`LTV ${fP(d.ltv_pct)} — ${d.ltv_pct<=80?'within bank limits':'exceeds 80% limit'}`]);
-  else fl.push(['ok','Cash purchase — no leverage, full equity investment']);
-  fl.push(['info',`AfA €${d.annual_afa.toLocaleString('de-DE')}/yr → €${d.afa_tax_saving_yr1.toLocaleString('de-DE')} tax saving yr 1`]);
-  if(d.market_rent_m2&&p.sqm>0) fl.push([p.rent_monthly/p.sqm>d.market_rent_m2*1.1?'warn':'ok',`Rent €${(p.rent_monthly/p.sqm).toFixed(1)}/m² vs market €${d.market_rent_m2}/m²`]);
-  document.getElementById('flagsList').innerHTML=fl.map(([c,t])=>`<div class="fi"><div class="fd ${c==='info'?'info':c}"></div><span>${t}</span></div>`).join('');
+  fl.push([d.kpf<25?'ok':'warn',`Kaufpreisfaktor ${fX(d.kpf)} — ${d.kpf<25?t('fl_kpf_fair'):t('fl_kpf_high')}`]);
+  if(d.net_yield_pct>3.5) fl.push(['ok',t('fl_yield_ok',{v:fP(d.net_yield_pct)})]);
+  else if(d.net_yield_pct>2.5) fl.push(['warn',t('fl_yield_warn',{v:fP(d.net_yield_pct)})]);
+  else fl.push(['bad',t('fl_yield_bad',{v:fP(d.net_yield_pct)})]);
+  fl.push([cfMo>=0?'ok':'warn',t('fl_cf',{sign:cfMo>=0?'+':'−',v:Math.abs(Math.round(cfMo)).toLocaleString('de-DE')})+(p.financed?t('fl_cf_debt'):'')]);
+  if(p.financed) fl.push([d.ltv_pct<=80?'ok':'bad',`LTV ${fP(d.ltv_pct)} — ${d.ltv_pct<=80?t('fl_ltv_ok'):t('fl_ltv_bad')}`]);
+  else fl.push(['ok',t('vs_no_leverage')]);
+  fl.push(['info',t('fl_afa',{afa:d.annual_afa.toLocaleString('de-DE'),saving:d.afa_tax_saving_yr1.toLocaleString('de-DE')})]);
+  if(d.market_rent_m2&&p.sqm>0) fl.push([p.rent_monthly/p.sqm>d.market_rent_m2*1.1?'warn':'ok',t('fl_rent',{r:(p.rent_monthly/p.sqm).toFixed(1),m:d.market_rent_m2})]);
+  document.getElementById('flagsList').innerHTML=fl.map(([c,tx])=>`<div class="fi"><div class="fd ${c==='info'?'info':c}"></div><span>${tx}</span></div>`).join('');
 
   document.getElementById('irrTable').innerHTML=[[10,d.irr_10,d.equity_multiple_10],[15,d.irr_15,d.equity_multiple_15],[20,d.irr_20,d.equity_multiple_20]].map(([yr,irr,em])=>{
     const g=((em-1)*100).toFixed(1);
-    return `<tr${yr===parseInt(p.holding_years)?' class="hl"':''}><td>${yr} years</td><td class="${irr>5?'pos':'neg'}">${fP(irr)}</td><td>${em.toFixed(2).replace('.',',')}×</td><td class="${g>=0?'pos':'neg'}">${g>=0?'+':''}${g}%</td></tr>`;
+    return `<tr${yr===parseInt(p.holding_years)?' class="hl"':''}><td>${t('irr_years',{n:yr})}</td><td class="${irr>5?'pos':'neg'}">${fP(irr)}</td><td>${em.toFixed(2).replace('.',',')}×</td><td class="${g>=0?'pos':'neg'}">${g>=0?'+':''}${g}%</td></tr>`;
   }).join('');
 
   document.getElementById('detailTable').innerHTML=d.year_data.map(y=>`<tr><td>Yr ${y.year}</td><td>${fmt(y.rent_gross)}</td><td>${fmt(y.interest)}</td><td>${fmt(y.afa_regular)}</td><td class="${y.afa_sonder>0?'pos':''}">${y.afa_sonder>0?fmt(y.afa_sonder):'—'}</td><td class="${y.tax_impact<=0?'pos':'neg'}">${y.tax_impact<=0?'+':'−'}${fmt(Math.abs(y.tax_impact))}</td><td class="${y.cash_flow>=0?'pos':'neg'}">${y.cash_flow>=0?'+':'−'}${fmt(Math.abs(y.cash_flow))}</td><td>${fmt(y.property_value)}</td></tr>`).join('');
 
-  sT('aiText', d.ai_analysis||'No analysis mode configured. Click ⚙ Settings to add your connection details.');
+  sT('aiText', d.ai_analysis||t('ai_placeholder'));
   sT('aiBadge', d._aiModel||'Instant');
 
-  const mi=[['Bodenrichtwert',d.bodenrichtwert_m2?`€${d.bodenrichtwert_m2}/m²`:'N/A','Official land value'],['Rent Index',d.market_rent_m2?`€${d.market_rent_m2}/m²`:'N/A','Mietspiegel'],['Mortgage Rate',d.current_mortgage_rate?`${d.current_mortgage_rate}%`:'N/A','Bundesbank 10yr'],['Location Score',d.location_score?`${d.location_score}/10`:'N/A','OSM amenity score'],['Population Trend',d.population_trend||'N/A','Annual growth'],['Address',d.address_resolved||p.address,'Geocoded']];
+  const mi=[[t('mk_bodenrichtwert'),d.bodenrichtwert_m2?`€${d.bodenrichtwert_m2}/m²`:t('vs_na'),t('mk_bodenrichtwert_note')],[t('mk_rent_index'),d.market_rent_m2?`€${d.market_rent_m2}/m²`:t('vs_na'),t('mk_rent_note')],[t('mk_mortgage'),d.current_mortgage_rate?`${d.current_mortgage_rate}%`:t('vs_na'),t('mk_mortgage_note')],[t('mk_location'),d.location_score?`${d.location_score}/10`:t('vs_na'),t('mk_location_note')],[t('mk_population'),d.population_trend||t('vs_na'),t('mk_population_note')],[t('mk_address'),d.address_resolved||p.address,t('mk_address_note')]];
   document.getElementById('mktGrid').innerHTML=mi.map(([k,v,n])=>`<div class="mc2"><div class="mk">${k}</div><div class="mv2">${v}</div><div class="ms">${n}</div></div>`).join('');
   sT('mktBadge', d._dataSource||'Local');
 
   const landV=p.purchase_price*p.land_share_pct/100;
+  const closingNote=`GrESt ${p.transfer_tax_pct}% + ${t('f_notary')} ${p.notary_pct}%`+(p.agent_pct>0?` + ${t('f_agent')} ${p.agent_pct}%`:'');
   const afaRows=[
-    ['Purchase price',fmt(d.purchase_price),''],
-    ['Closing costs',fmt(d.closing_costs),`GrESt ${p.transfer_tax_pct}% + Notary ${p.notary_pct}%`],
-    ['Land value (excl.)',fmt(landV),`${p.land_share_pct}% of purchase price`],
-    ['AfA basis',fmt(d.afa_basis),'Price + Closing − Land'],
-    ['Regular AfA rate',fP(d.afa_rate_pct),p.condition==='newbuild'?'§7 EStG new build':'§7 EStG existing building'],
-    ['Regular AfA / yr',fmt(d.annual_afa),'Deductible each year (all years)'],
+    [t('afa_price'),fmt(d.purchase_price),''],
+    [t('afa_closing'),fmt(d.closing_costs),closingNote],
+    [t('afa_land'),fmt(landV),`${p.land_share_pct}% of purchase price`],
+    [t('afa_basis'),fmt(d.afa_basis),t('afa_closing_note')],
+    [t('afa_rate'),fP(d.afa_rate_pct),p.condition==='newbuild'?t('afa_newbuild'):t('afa_existing')],
+    [t('afa_annual'),fmt(d.annual_afa),t('afa_annual_note')],
   ];
   if(d.sonder_afa_enabled && d.annual_sonder_afa>0){
-    afaRows.push(['Sonder-AfA rate',fP(d.sonder_afa_rate_pct),'§7b EStG — flat annual bonus']);
-    afaRows.push(['Sonder-AfA / yr',fmt(d.annual_sonder_afa),`Years 1–${d.sonder_afa_years} only (always linear per §7b)`]);
-    afaRows.push(['Total AfA yr 1–'+d.sonder_afa_years,fmt(d.annual_afa+d.annual_sonder_afa),'Regular + Sonder-AfA combined']);
+    afaRows.push([t('afa_sonder_rate'),fP(d.sonder_afa_rate_pct),t('afa_sonder_note')]);
+    afaRows.push([t('afa_sonder_annual'),fmt(d.annual_sonder_afa),`Years 1–${d.sonder_afa_years} only (always linear per §7b)`]);
+    afaRows.push([t('afa_total')+d.sonder_afa_years,fmt(d.annual_afa+d.annual_sonder_afa),t('afa_total_note')]);
   }
-  afaRows.push(['Tax rate',fP(p.tax_rate),'Marginal rate incl. Solidaritätszuschlag']);
-  afaRows.push(['Tax saving yr1',fmt(d.afa_tax_saving_yr1),'If income negative (Werbungskostenüberschuss)']);
+  afaRows.push([t('afa_taxrate'),fP(p.tax_rate),t('afa_taxrate_note')]);
+  afaRows.push([t('afa_saving'),fmt(d.afa_tax_saving_yr1),t('afa_saving_note')]);
   document.getElementById('afaBody').innerHTML=afaRows.map(([a,b,c])=>`<tr><td>${a}</td><td><strong style="font-family:'DM Mono',monospace">${b}</strong></td><td style="color:var(--t3)">${c}</td></tr>`).join('');
 }
 
@@ -834,7 +1000,7 @@ function collectForm() {
     repayment_rate:   parseFloat(document.getElementById('f_repayment').value)||2.0,
     transfer_tax_pct: parseFloat(document.getElementById('f_grunderwerb').value)||6.0,
     notary_pct:       parseFloat(document.getElementById('f_notary').value)||2.0,
-    agent_pct:        0,
+    agent_pct:        Math.min(parseFloat(document.getElementById('f_agent').value)||0, 5),
     land_share_pct:   parseFloat(document.getElementById('f_landshare').value)||20,
     rent_monthly:     parseFloat(document.getElementById('f_rent').value)||0,
     hausgeld_monthly: parseFloat(document.getElementById('f_hausgeld').value)||200,
@@ -869,7 +1035,7 @@ document.getElementById('f_special_afa_years').addEventListener('input', validat
 syncAfaSliderValues();
 syncSpecialAfaUi();
 
-const STEPS=['Computing closing costs…','Building AfA schedule…','Running amortisation table…','Calculating taxable income…','Computing IRR…','Calling AI model…'];
+const getSteps=()=>T[lang]?.steps||T.en.steps;
 
 async function runAnalysis() {
   const ov=document.getElementById('loadingOverlay'), st=document.getElementById('lstep'), fi=document.getElementById('lfill');
@@ -880,7 +1046,7 @@ async function runAnalysis() {
   setTimeout(()=>fi.style.width='100%',50);
   let si=0;
   const iv=setInterval(()=>{
-    if(si<STEPS.length){st.textContent=STEPS[si];const d=document.getElementById('ldots').children[si];if(d)d.classList.add('on');si++;}
+    const STEPS=getSteps();if(si<STEPS.length){st.textContent=STEPS[si];const d=document.getElementById('ldots').children[si];if(d)d.classList.add('on');si++;}
   },500);
   try {
     const p=collectForm();
