@@ -251,7 +251,7 @@ input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
         <select id="f_condition" class="fsel">
           <option value="existing">Existing building</option>
           <option value="existing">Partially renovated</option>
-          <option value="newbuild">New build (3% AfA)</option>
+          <option value="newbuild">New build (5% AfA)</option>
         </select>
       </div>
     </div>
@@ -616,7 +616,7 @@ function localCompute(p) {
   const loan=p.financed ? p.purchase_price+closing-p.equity : 0;
   const ltv=p.financed ? loan/p.purchase_price : 0;
   const landV=p.purchase_price*p.land_share_pct/100, afaBasis=p.purchase_price+closing-landV;
-  const afaRateRaw=p.afa_rate_input??(p.condition==='newbuild'?0.03:0.02);
+  const afaRateRaw=p.afa_rate_input??(p.condition==='newbuild'?0.05:0.02);
   const afaRate=afaRateRaw>1?afaRateRaw/100:afaRateRaw;
   const annAfA=afaBasis*afaRate;
   // Sonder-AfA: §7b EStG — always a flat annual deduction for years 1–N, independent of AfA method
@@ -769,7 +769,7 @@ function render(d,p) {
     ['Closing costs',fmt(d.closing_costs),`GrESt ${p.transfer_tax_pct}% + Notary ${p.notary_pct}%`],
     ['Land value (excl.)',fmt(landV),`${p.land_share_pct}% of purchase price`],
     ['AfA basis',fmt(d.afa_basis),'Price + Closing − Land'],
-    ['Regular AfA rate',fP(d.afa_rate_pct),d.afa_rate_pct===3?'§7 EStG new build':'§7 EStG existing building'],
+    ['Regular AfA rate',fP(d.afa_rate_pct),p.condition==='newbuild'?'§7 EStG new build':'§7 EStG existing building'],
     ['Regular AfA / yr',fmt(d.annual_afa),'Deductible each year (all years)'],
   ];
   if(d.sonder_afa_enabled && d.annual_sonder_afa>0){
