@@ -66,6 +66,13 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .afa-value{font-size:11px;color:var(--blue);font-family:"DM Mono",monospace;background:rgba(0,113,227,.09);padding:2px 6px;border-radius:6px;flex-shrink:0;}
 .fsel{background:none;border:none;outline:none;font-family:inherit;font-size:13px;font-weight:500;color:var(--text);cursor:pointer;-webkit-appearance:none;appearance:none;max-width:160px;text-align:right;}
 .seg{display:flex;background:var(--s2);border-radius:var(--r);padding:3px;gap:2px;}
+.tog{position:relative;display:inline-block;width:36px;height:20px;flex-shrink:0;}
+.tog input{opacity:0;width:0;height:0;position:absolute;}
+.tog-sl{position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:20px;transition:.2s;}
+.tog-sl:before{content:'';position:absolute;height:16px;width:16px;left:2px;bottom:2px;background:#fff;border-radius:50%;transition:.2s;}
+.tog input:checked+.tog-sl{background:var(--blue);}
+.tog input:checked+.tog-sl:before{transform:translateX(16px);}
+#fin_rows{transition:opacity .15s ease;}
 .seg input[type=radio]{display:none;}
 input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
 .seg label{flex:1;text-align:center;font-size:12px;font-weight:500;color:var(--t2);padding:5px 2px;border-radius:8px;cursor:pointer;transition:all .18s;user-select:none;}
@@ -253,16 +260,24 @@ input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
   <div class="fsec"><div class="flabel">Financing</div>
     <div class="fgroup">
       <div class="frow"><span class="flb">Purchase price</span><span class="fsp"></span><input id="f_price" class="finp" type="number" value="420000"><span class="funit">€</span></div>
-      <div class="frow tw">
-        <div class="fhalf"><span class="flb">Equity</span><span class="fsp"></span><input id="f_equity" class="finp" type="number" value="100000"><span class="funit">€</span></div>
-        <div class="fhalf"><span class="flb">Interest</span><span class="fsp"></span><input id="f_interest" class="finp" type="number" value="3.8" step="0.1" style="width:40px;"><span class="funit">%</span></div>
+      <div class="frow" style="align-items:center;">
+        <span class="flb">Bank financed</span><span class="fsp"></span>
+        <label class="tog"><input type="checkbox" id="f_financed" checked><span class="tog-sl"></span></label>
+      </div>
+      <div id="fin_rows">
+        <div class="frow tw">
+          <div class="fhalf"><span class="flb">Equity</span><span class="fsp"></span><input id="f_equity" class="finp" type="number" value="100000"><span class="funit">€</span></div>
+          <div class="fhalf"><span class="flb">Interest</span><span class="fsp"></span><input id="f_interest" class="finp" type="number" value="3.8" step="0.1" style="width:40px;"><span class="funit">%</span></div>
+        </div>
+        <div class="frow tw">
+          <div class="fhalf"><span class="flb">Repayment</span><span class="fsp"></span><input id="f_repayment" class="finp" type="number" value="2.0" step="0.1" style="width:40px;"><span class="funit">%</span></div>
+        </div>
       </div>
       <div class="frow tw">
-        <div class="fhalf"><span class="flb">Repayment</span><span class="fsp"></span><input id="f_repayment" class="finp" type="number" value="2.0" step="0.1" style="width:40px;"><span class="funit">%</span></div>
         <div class="fhalf"><span class="flb">GrESt</span><span class="fsp"></span><input id="f_grunderwerb" class="finp" type="number" value="6.0" step="0.5" style="width:40px;"><span class="funit">%</span></div>
+        <div class="fhalf"><span class="flb">Notary</span><span class="fsp"></span><input id="f_notary" class="finp" type="number" value="2.0" step="0.1" style="width:40px;"><span class="funit">%</span></div>
       </div>
       <div class="frow tw">
-        <div class="fhalf"><span class="flb">Notary</span><span class="fsp"></span><input id="f_notary" class="finp" type="number" value="2.0" step="0.1" style="width:40px;"><span class="funit">%</span></div>
         <div class="fhalf"><span class="flb">Land share</span><span class="fsp"></span><input id="f_landshare" class="finp" type="number" value="20" step="5" style="width:40px;"><span class="funit">%</span></div>
       </div>
     </div>
@@ -597,7 +612,9 @@ function calcIRR(f) {
 }
 function localCompute(p) {
   const grEst=p.purchase_price*p.transfer_tax_pct/100, notary=p.purchase_price*p.notary_pct/100;
-  const closing=grEst+notary, loan=p.purchase_price+closing-p.equity, ltv=loan/p.purchase_price;
+  const closing=grEst+notary;
+  const loan=p.financed ? p.purchase_price+closing-p.equity : 0;
+  const ltv=p.financed ? loan/p.purchase_price : 0;
   const landV=p.purchase_price*p.land_share_pct/100, afaBasis=p.purchase_price+closing-landV;
   const afaRateRaw=p.afa_rate_input??(p.condition==='newbuild'?0.03:0.02);
   const afaRate=afaRateRaw>1?afaRateRaw/100:afaRateRaw;
@@ -608,12 +625,16 @@ function localCompute(p) {
   const sonderRate    = sonderRateRaw > 1 ? sonderRateRaw / 100 : sonderRateRaw;
   const sonderYears   = sonderEnabled ? Math.min(Math.max(parseInt(p.special_afa_years) || 4, 1), 4) : 0;
   const annSonderAfA  = afaBasis * sonderRate;
-  const mRate=p.interest_rate/100/12, annMo=loan*(p.repayment_rate/100/12+mRate), annAnn=annMo*12;
+  const mRate=p.financed ? p.interest_rate/100/12 : 0;
+  const annMo=p.financed ? loan*(p.repayment_rate/100/12+mRate) : 0;
+  const annAnn=annMo*12;
+  // For cash purchase, initial outflow is full price + closing; for financed, it's equity only
+  const initOutflow=p.financed ? p.equity : p.purchase_price+closing;
   let rem=loan, cumCF=0;
-  const yrs=[], iF={10:[-p.equity],15:[-p.equity],20:[-p.equity]};
+  const yrs=[], iF={10:[-initOutflow],15:[-initOutflow],20:[-initOutflow]};
   for (let yr=1;yr<=30;yr++) {
     const rg=p.rent_monthly*12*Math.pow(1+p.rent_growth/100,yr-1)*(1-p.vacancy_rate/100);
-    const iy=rem*p.interest_rate/100, py=Math.min(annAnn-iy,rem);
+    const iy=p.financed ? rem*p.interest_rate/100 : 0, py=p.financed ? Math.min(annAnn-iy,rem) : 0;
     rem=Math.max(0,rem-py);
     const sonderThisYr  = (sonderEnabled && yr <= sonderYears) ? annSonderAfA : 0;
     const afaThisYr     = annAfA + sonderThisYr;
@@ -639,10 +660,13 @@ function localCompute(p) {
 // ═══════════════════════════ AI PROVIDERS ═════════════════════════════════
 const SYS=`You are an expert German real estate investment analyst. Given property metrics, provide a concise professional analysis (under 250 words) covering: price fairness vs Bodenrichtwert, rental yield assessment, AfA tax advantage, key risks, and a clear Buy/Hold/Avoid recommendation with specific numbers.`;
 function buildPrompt(m,p) {
+  const finLine=p.financed
+    ?`Equity: €${p.equity.toLocaleString()} | LTV: ${m.ltv_pct.toFixed(1)}% | Annuity: €${m.annuity_monthly}/mo`
+    :`Cash purchase (no mortgage) | Full outlay: €${(p.purchase_price+m.closing_costs).toLocaleString()}`;
   return `Property: ${p.address} | ${p.sqm}m² built ${p.year_built}
-Price: €${p.purchase_price.toLocaleString()} (€${Math.round(p.purchase_price/p.sqm).toLocaleString()}/m²) | Equity: €${p.equity.toLocaleString()} | LTV: ${m.ltv_pct.toFixed(1)}%
-Net yield: ${m.net_yield_pct.toFixed(2)}% | Kaufpreisfaktor: ${m.kpf.toFixed(1)}× | Annuity: €${m.annuity_monthly}/mo
-Cash flow yr1: ${m.cash_flow_monthly_yr1>=0?'+':''}€${Math.round(m.cash_flow_monthly_yr1)}/mo after tax & debt
+Price: €${p.purchase_price.toLocaleString()} (€${Math.round(p.purchase_price/p.sqm).toLocaleString()}/m²) | ${finLine}
+Net yield: ${m.net_yield_pct.toFixed(2)}% | Kaufpreisfaktor: ${m.kpf.toFixed(1)}×
+Cash flow yr1: ${m.cash_flow_monthly_yr1>=0?'+':''}€${Math.round(m.cash_flow_monthly_yr1)}/mo after tax${p.financed?' & debt':''}
 AfA: ${m.afa_rate_pct}% on €${m.afa_basis.toLocaleString()} = €${m.annual_afa.toLocaleString()}/yr → tax saving €${m.afa_tax_saving_yr1.toLocaleString()}/yr
 IRR: ${m.irr_10.toFixed(1)}% (10yr) / ${m.irr_15.toFixed(1)}% (15yr) / ${m.irr_20.toFixed(1)}% (20yr)
 Equity multiple: ${m.equity_multiple_10.toFixed(2)}× (10yr) / ${m.equity_multiple_20.toFixed(2)}× (20yr)
@@ -692,16 +716,16 @@ function render(d,p) {
   vt.textContent=d.verdict.toUpperCase();
   vt.className='vt '+(d.score>=7?'g':d.score>=5?'o':'r');
   const cfMo=d.cash_flow_monthly_yr1;
-  sT('verdictSummary',`Net yield ${fP(d.net_yield_pct)} · Kaufpreisfaktor ${fX(d.kpf)} · IRR ${fP(d.irr_10)} (10yr) · AfA €${d.afa_tax_saving_yr1.toLocaleString('de-DE')}/yr tax saving · CF ${cfMo>=0?'+':'−'}€${Math.abs(Math.round(cfMo)).toLocaleString('de-DE')}/mo`);
+  sT('verdictSummary',`Net yield ${fP(d.net_yield_pct)} · Kaufpreisfaktor ${fX(d.kpf)} · IRR ${fP(d.irr_10)} (10yr) · AfA €${d.afa_tax_saving_yr1.toLocaleString('de-DE')}/yr tax saving · CF ${cfMo>=0?'+':'−'}€${Math.abs(Math.round(cfMo)).toLocaleString('de-DE')}/mo`+(p.financed?` · LTV ${fP(d.ltv_pct)}`:''));
 
   sM('mv_ny',  fP(d.net_yield_pct),  d.net_yield_pct>=3.2?'ok':d.net_yield_pct>=2?'mid':'bad');
   sM('mv_kpf', fX(d.kpf),            d.kpf<22?'ok':d.kpf<28?'mid':'bad');
   sM('mv_irr', fP(d.irr_10),         d.irr_10>6?'ok':d.irr_10>4?'mid':'bad');
   sM('mv_cf',  (cfMo>=0?'+':'−')+'€'+Math.abs(Math.round(cfMo)).toLocaleString('de-DE'), cfMo>0?'ok':cfMo>-200?'mid':'bad');
-  sM('mv_ltv', fP(d.ltv_pct),        d.ltv_pct<80?'ok':d.ltv_pct<90?'mid':'bad');
+  if(p.financed){sM('mv_ltv',fP(d.ltv_pct),d.ltv_pct<80?'ok':d.ltv_pct<90?'mid':'bad');}else{sM('mv_ltv','N/A');}
   sM('mv_afa', '€'+d.afa_tax_saving_yr1.toLocaleString('de-DE'));
   sT('mb_afa', `${fP(d.afa_rate_pct)} on €${d.afa_basis.toLocaleString('de-DE')} basis`);
-  sM('mv_ann', '€'+d.annuity_monthly.toLocaleString('de-DE')+'/mo');
+  if(p.financed){sM('mv_ann','€'+d.annuity_monthly.toLocaleString('de-DE')+'/mo');}else{sM('mv_ann','Cash purchase');}
   sM('mv_nk',  fmt(d.closing_costs));
   sT('mb_nk',  fP(d.closing_costs/d.purchase_price*100)+' of purchase price');
 
@@ -718,8 +742,9 @@ function render(d,p) {
   if(d.net_yield_pct>3.5) fl.push(['ok',`Net yield ${fP(d.net_yield_pct)} exceeds 3.5% target`]);
   else if(d.net_yield_pct>2.5) fl.push(['warn',`Net yield ${fP(d.net_yield_pct)} — below 3.5% target`]);
   else fl.push(['bad',`Net yield ${fP(d.net_yield_pct)} — significantly below market`]);
-  fl.push([cfMo>=0?'ok':'warn',`Yr 1 cash flow: ${cfMo>=0?'+':'−'}€${Math.abs(Math.round(cfMo)).toLocaleString('de-DE')}/mo after tax & debt service`]);
-  fl.push([d.ltv_pct<=80?'ok':'bad',`LTV ${fP(d.ltv_pct)} — ${d.ltv_pct<=80?'within bank limits':'exceeds 80% limit'}`]);
+  fl.push([cfMo>=0?'ok':'warn',`Yr 1 cash flow: ${cfMo>=0?'+':'−'}€${Math.abs(Math.round(cfMo)).toLocaleString('de-DE')}/mo after tax`+(p.financed?' & debt service':'')]);
+  if(p.financed) fl.push([d.ltv_pct<=80?'ok':'bad',`LTV ${fP(d.ltv_pct)} — ${d.ltv_pct<=80?'within bank limits':'exceeds 80% limit'}`]);
+  else fl.push(['ok','Cash purchase — no leverage, full equity investment']);
   fl.push(['info',`AfA €${d.annual_afa.toLocaleString('de-DE')}/yr → €${d.afa_tax_saving_yr1.toLocaleString('de-DE')} tax saving yr 1`]);
   if(d.market_rent_m2&&p.sqm>0) fl.push([p.rent_monthly/p.sqm>d.market_rent_m2*1.1?'warn':'ok',`Rent €${(p.rent_monthly/p.sqm).toFixed(1)}/m² vs market €${d.market_rent_m2}/m²`]);
   document.getElementById('flagsList').innerHTML=fl.map(([c,t])=>`<div class="fi"><div class="fd ${c==='info'?'info':c}"></div><span>${t}</span></div>`).join('');
@@ -803,6 +828,7 @@ function collectForm() {
     year_built:       parseInt(document.getElementById('f_yearbuilt').value)||1990,
     condition:        document.getElementById('f_condition').value,
     purchase_price:   parseFloat(document.getElementById('f_price').value)||0,
+    financed:         document.getElementById('f_financed').checked,
     equity:           parseFloat(document.getElementById('f_equity').value)||0,
     interest_rate:    parseFloat(document.getElementById('f_interest').value)||3.8,
     repayment_rate:   parseFloat(document.getElementById('f_repayment').value)||2.0,
@@ -832,6 +858,9 @@ function collectForm() {
 // Bind events to the single, canonical controls (no duplicates)
 document.getElementById('f_afa_rate').addEventListener('input', syncAfaSliderValues);
 document.getElementById('f_special_afa_rate').addEventListener('input', syncAfaSliderValues);
+document.getElementById('f_financed').addEventListener('change', function() {
+  document.getElementById('fin_rows').style.display = this.checked ? '' : 'none';
+});
 document.getElementById('f_special_afa_enabled').addEventListener('change', () => {
   syncSpecialAfaUi();
   validateAfaInputs();
