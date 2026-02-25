@@ -1012,6 +1012,8 @@ function collectForm() {
     vacancy_rate:     v ? parseFloat(v.id.replace('v','')) : 1,
     holding_years:    parseInt(document.getElementById('f_horizon').value)||10,
     afa_rate_input:   Number(document.getElementById('f_afa_rate').value),
+    afa_method:       specialEnabled ? 'sonder' : 'linear',
+    grundsteuer_annual: 0,
     special_afa_enabled: specialEnabled,
   };
   if (specialEnabled) {
