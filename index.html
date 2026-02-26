@@ -299,10 +299,8 @@ input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
         <div class="fhalf"><span class="flb">GrESt</span><span class="fsp"></span><input id="f_grunderwerb" class="finp" type="number" value="6.0" step="0.5" style="width:40px;"><span class="funit">%</span></div>
         <div class="fhalf"><span class="flb" data-i18n="f_notary">Notary</span><span class="fsp"></span><input id="f_notary" class="finp" type="number" value="2.0" step="0.1" style="width:40px;"><span class="funit">%</span></div>
       </div>
-      <div class="frow tw">
-        <div class="fhalf"><span class="flb" data-i18n="f_land_value">Land value</span><span class="fsp"></span><input id="f_land_value" class="finp" type="number" value="84000" style="width:70px;"><span class="funit">€</span></div>
-        <div class="fhalf"><span class="flb" data-i18n="f_agent">Makler</span><span class="fsp"></span><input id="f_agent" class="finp" type="number" value="0" min="0" max="5" step="0.5" style="width:40px;"><span class="funit">%</span></div>
-      </div>
+      <div class="frow"><span class="flb" data-i18n="f_land_value">Land value</span><span class="fsp"></span><input id="f_land_value" class="finp" type="number" value="84000" style="width:70px;"><span class="funit">€</span></div>
+      <div class="frow"><span class="flb" data-i18n="f_agent">Makler</span><span class="fsp"></span><input id="f_agent" class="finp" type="number" value="0" min="0" max="5" step="0.5" style="width:40px;"><span class="funit">%</span></div>
       <div class="frow" style="padding-top:4px;padding-bottom:6px;">
         <span id="landshare_hint" class="fhint"></span>
       </div>
@@ -596,6 +594,7 @@ const T = {
     ls_explanation:'In Germany, land (Grundstück) cannot be depreciated — only the building portion qualifies for AfA (§7 EStG). A lower land share means a larger AfA basis and higher annual tax deductions. Values under 10% are considered excellent for tax efficiency.',
     f_price:'Purchase price', f_financed:'Bank financed', f_equity:'Equity', f_interest:'Interest',
     f_repayment:'Repayment', f_notary:'Notary', f_land_value:'Land value', f_agent:'Makler',
+    ls_of_price:'of purchase price',
     ls_hint_excellent:'excellent for AfA (maximises depreciation basis)',
     ls_hint_good:'good AfA advantage',
     ls_hint_typical:'typical; reduces AfA basis',
@@ -670,6 +669,7 @@ const T = {
     ls_explanation:'Grundstücke sind steuerlich nicht abschreibungsfähig — nur der Gebäudeanteil qualifiziert für die AfA (§7 EStG). Ein geringerer Grundstücksanteil vergrößert die AfA-Basis und erhöht den jährlichen Steuervorteil. Werte unter 10 % gelten als steuerlich besonders vorteilhaft.',
     f_price:'Kaufpreis', f_financed:'Bankfinanziert', f_equity:'EK', f_interest:'Zinssatz',
     f_repayment:'Tilgung', f_notary:'Notar', f_land_value:'Grundstückswert', f_agent:'Makler',
+    ls_of_price:'des Kaufpreises',
     ls_hint_excellent:'ausgezeichnet für AfA (maximiert Abschreibungsbasis)',
     ls_hint_good:'guter AfA-Vorteil',
     ls_hint_typical:'typisch; reduziert AfA-Basis',
@@ -944,7 +944,7 @@ function render(d,p) {
   sT('mb_afa', `${fP(d.afa_rate_pct)} on €${d.afa_basis.toLocaleString('de-DE')} basis`);
   if(p.financed){sM('mv_ann','€'+d.annuity_monthly.toLocaleString('de-DE')+t('vs_mo'));}else{sM('mv_ann',t('vs_cash_purchase'));}
   sM('mv_nk',  fmt(d.closing_costs));
-  sT('mb_nk',  fP(d.closing_costs/d.purchase_price*100)+' of purchase price');
+  sT('mb_nk',  fP(d.closing_costs/d.purchase_price*100)+' '+t('ls_of_price'));
 
   const byrs=[1,5,10,15,20], cfs=byrs.map(yr=>d.year_data.find(y=>y.year===yr)?.cash_flow||0);
   const mx=Math.max(...cfs.map(Math.abs),1);
@@ -985,7 +985,7 @@ function render(d,p) {
   const afaRows=[
     [t('afa_price'),fmt(d.purchase_price),''],
     [t('afa_closing'),fmt(d.closing_costs),closingNote],
-    [t('afa_land'),fmt(landV),`${p.land_share_pct.toFixed(1)}% of purchase price`],
+    [t('afa_land'),fmt(landV),`${p.land_share_pct.toFixed(1)}% ${t('ls_of_price')}`],
     [t('afa_basis'),fmt(d.afa_basis),t('afa_closing_note')],
     [t('afa_rate'),fP(d.afa_rate_pct),p.condition==='newbuild'?t('afa_newbuild'):t('afa_existing')],
     [t('afa_annual'),fmt(d.annual_afa),t('afa_annual_note')],
@@ -1101,18 +1101,19 @@ function updateLandshareHint() {
   const el = document.getElementById('landshare_hint');
   if (!el) return;
   const pctStr = pct.toFixed(1) + '%';
+  const ofPrice = t('ls_of_price');
   if (pct < 10) {
     el.style.color = 'var(--green)';
-    el.textContent = `= ${pctStr} of purchase price — ${t('ls_hint_excellent')}`;
+    el.textContent = `= ${pctStr} ${ofPrice} — ${t('ls_hint_excellent')}`;
   } else if (pct <= 20) {
     el.style.color = 'var(--blue)';
-    el.textContent = `= ${pctStr} of purchase price — ${t('ls_hint_good')}`;
+    el.textContent = `= ${pctStr} ${ofPrice} — ${t('ls_hint_good')}`;
   } else if (pct <= 30) {
     el.style.color = 'var(--t2)';
-    el.textContent = `= ${pctStr} of purchase price — ${t('ls_hint_typical')}`;
+    el.textContent = `= ${pctStr} ${ofPrice} — ${t('ls_hint_typical')}`;
   } else {
     el.style.color = 'var(--orange)';
-    el.textContent = `= ${pctStr} of purchase price — ${t('ls_hint_high')}`;
+    el.textContent = `= ${pctStr} ${ofPrice} — ${t('ls_hint_high')}`;
   }
 }
 document.getElementById('f_land_value').addEventListener('input', updateLandshareHint);
