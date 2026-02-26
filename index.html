@@ -300,7 +300,7 @@ input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
         <div class="fhalf"><span class="flb" data-i18n="f_notary">Notary</span><span class="fsp"></span><input id="f_notary" class="finp" type="number" value="2.0" step="0.1" style="width:40px;"><span class="funit">%</span></div>
       </div>
       <div class="frow tw">
-        <div class="fhalf"><span class="flb" data-i18n="f_landshare">Land share</span><span class="fsp"></span><input id="f_landshare" class="finp" type="number" value="20" step="5" style="width:40px;"><span class="funit">%</span></div>
+        <div class="fhalf"><span class="flb" data-i18n="f_land_value">Land value</span><span class="fsp"></span><input id="f_land_value" class="finp" type="number" value="84000" style="width:70px;"><span class="funit">€</span></div>
         <div class="fhalf"><span class="flb" data-i18n="f_agent">Makler</span><span class="fsp"></span><input id="f_agent" class="finp" type="number" value="0" min="0" max="5" step="0.5" style="width:40px;"><span class="funit">%</span></div>
       </div>
       <div class="frow" style="padding-top:4px;padding-bottom:6px;">
@@ -595,11 +595,11 @@ const T = {
     ls_label_value:'Land value', ls_label_pct:'of purchase price',
     ls_explanation:'In Germany, land (Grundstück) cannot be depreciated — only the building portion qualifies for AfA (§7 EStG). A lower land share means a larger AfA basis and higher annual tax deductions. Values under 10% are considered excellent for tax efficiency.',
     f_price:'Purchase price', f_financed:'Bank financed', f_equity:'Equity', f_interest:'Interest',
-    f_repayment:'Repayment', f_notary:'Notary', f_landshare:'Land share', f_agent:'Makler',
-    ls_hint_excellent:'< 10% — excellent for AfA (maximises depreciation basis)',
-    ls_hint_good:'10–20% — good AfA advantage',
-    ls_hint_typical:'20–30% — typical; reduces AfA basis',
-    ls_hint_high:'> 30% — high land share; significantly reduces AfA basis',
+    f_repayment:'Repayment', f_notary:'Notary', f_land_value:'Land value', f_agent:'Makler',
+    ls_hint_excellent:'excellent for AfA (maximises depreciation basis)',
+    ls_hint_good:'good AfA advantage',
+    ls_hint_typical:'typical; reduces AfA basis',
+    ls_hint_high:'high share — significantly reduces AfA basis',
     f_rent:'Cold rent', f_maintenance:'Maintenance', f_management:'Management',
     f_rentgrowth:'Rent growth', f_appreciation:'Appreciation', f_taxrate:'Tax rate', f_horizon:'Horizon',
     f_afa_lbl:'AfA rate (§7 EStG)', f_vacancy:'Vacancy', f_safa_years:'Years (max 4)',
@@ -669,11 +669,11 @@ const T = {
     ls_label_value:'Grundstückswert', ls_label_pct:'des Kaufpreises',
     ls_explanation:'Grundstücke sind steuerlich nicht abschreibungsfähig — nur der Gebäudeanteil qualifiziert für die AfA (§7 EStG). Ein geringerer Grundstücksanteil vergrößert die AfA-Basis und erhöht den jährlichen Steuervorteil. Werte unter 10 % gelten als steuerlich besonders vorteilhaft.',
     f_price:'Kaufpreis', f_financed:'Bankfinanziert', f_equity:'EK', f_interest:'Zinssatz',
-    f_repayment:'Tilgung', f_notary:'Notar', f_landshare:'Grundst.', f_agent:'Makler',
-    ls_hint_excellent:'< 10% — ausgezeichnet für AfA (maximiert Abschreibungsbasis)',
-    ls_hint_good:'10–20% — guter AfA-Vorteil',
-    ls_hint_typical:'20–30% — typisch; reduziert AfA-Basis',
-    ls_hint_high:'> 30% — hoher Grundstücksanteil; deutlich niedrigere AfA-Basis',
+    f_repayment:'Tilgung', f_notary:'Notar', f_land_value:'Grundstückswert', f_agent:'Makler',
+    ls_hint_excellent:'ausgezeichnet für AfA (maximiert Abschreibungsbasis)',
+    ls_hint_good:'guter AfA-Vorteil',
+    ls_hint_typical:'typisch; reduziert AfA-Basis',
+    ls_hint_high:'hoher Anteil — deutlich niedrigere AfA-Basis',
     f_rent:'Kaltmiete', f_maintenance:'Instandhaltung', f_management:'Verwaltung',
     f_rentgrowth:'Mietsteigerung', f_appreciation:'Wertsteigerung', f_taxrate:'Steuersatz', f_horizon:'Zeithorizont',
     f_afa_lbl:'AfA-Satz (§7 EStG)', f_vacancy:'Leerstand', f_safa_years:'Jahre (max. 4)',
@@ -985,7 +985,7 @@ function render(d,p) {
   const afaRows=[
     [t('afa_price'),fmt(d.purchase_price),''],
     [t('afa_closing'),fmt(d.closing_costs),closingNote],
-    [t('afa_land'),fmt(landV),`${p.land_share_pct}% of purchase price`],
+    [t('afa_land'),fmt(landV),`${p.land_share_pct.toFixed(1)}% of purchase price`],
     [t('afa_basis'),fmt(d.afa_basis),t('afa_closing_note')],
     [t('afa_rate'),fP(d.afa_rate_pct),p.condition==='newbuild'?t('afa_newbuild'):t('afa_existing')],
     [t('afa_annual'),fmt(d.annual_afa),t('afa_annual_note')],
@@ -1003,7 +1003,7 @@ function render(d,p) {
   const landShareEur = p.purchase_price * p.land_share_pct / 100;
   const lsBadge = document.getElementById('ls_pct_badge');
   if (lsBadge) {
-    lsBadge.textContent = `${p.land_share_pct}%`;
+    lsBadge.textContent = `${p.land_share_pct.toFixed(1)}%`;
     lsBadge.className = 'ctag' + (p.land_share_pct < 10 ? ' g' : p.land_share_pct > 30 ? ' or' : '');
     const lsEurEl = document.getElementById('ls_eur_value');
     lsEurEl.textContent = fmt(landShareEur);
@@ -1053,13 +1053,16 @@ function collectForm() {
   }
   const v = document.querySelector('input[name="vac"]:checked');
   const specialEnabled = document.getElementById('f_special_afa_enabled').checked;
+  const purchasePrice  = parseFloat(document.getElementById('f_price').value)||0;
+  const landValueEur   = parseFloat(document.getElementById('f_land_value').value)||0;
+  const landSharePct   = purchasePrice > 0 ? (landValueEur / purchasePrice * 100) : 0;
   const payload = {
     address:          document.getElementById('f_address').value,
     sqm:              parseFloat(document.getElementById('f_sqm').value)||0,
     year_built:       parseInt(document.getElementById('f_yearbuilt').value)||1990,
     condition:        document.getElementById('f_condition').value,
     energy_class:     document.getElementById('f_energy_class').value,
-    purchase_price:   parseFloat(document.getElementById('f_price').value)||0,
+    purchase_price:   purchasePrice,
     financed:         document.getElementById('f_financed').checked,
     equity:           parseFloat(document.getElementById('f_equity').value)||0,
     interest_rate:    parseFloat(document.getElementById('f_interest').value)||3.8,
@@ -1067,7 +1070,8 @@ function collectForm() {
     transfer_tax_pct: parseFloat(document.getElementById('f_grunderwerb').value)||6.0,
     notary_pct:       parseFloat(document.getElementById('f_notary').value)||2.0,
     agent_pct:        Math.min(parseFloat(document.getElementById('f_agent').value)||0, 5),
-    land_share_pct:   parseFloat(document.getElementById('f_landshare').value)||20,
+    land_value_eur:   landValueEur,
+    land_share_pct:   landSharePct,
     rent_monthly:     parseFloat(document.getElementById('f_rent').value)||0,
     hausgeld_monthly: parseFloat(document.getElementById('f_hausgeld').value)||200,
     maintenance_nd:   parseFloat(document.getElementById('f_maintenance').value)||1200,
@@ -1089,26 +1093,30 @@ function collectForm() {
   return payload;
 }
 
-// Land share AfA hint
+// Land share AfA hint — recomputes % live from land value ÷ purchase price
 function updateLandshareHint() {
-  const v = parseFloat(document.getElementById('f_landshare').value) || 20;
+  const landVal = parseFloat(document.getElementById('f_land_value').value) || 0;
+  const price   = parseFloat(document.getElementById('f_price').value)      || 1;
+  const pct     = price > 0 ? (landVal / price * 100) : 0;
   const el = document.getElementById('landshare_hint');
   if (!el) return;
-  if (v < 10) {
+  const pctStr = pct.toFixed(1) + '%';
+  if (pct < 10) {
     el.style.color = 'var(--green)';
-    el.textContent = t('ls_hint_excellent');
-  } else if (v <= 20) {
+    el.textContent = `= ${pctStr} of purchase price — ${t('ls_hint_excellent')}`;
+  } else if (pct <= 20) {
     el.style.color = 'var(--blue)';
-    el.textContent = t('ls_hint_good');
-  } else if (v <= 30) {
+    el.textContent = `= ${pctStr} of purchase price — ${t('ls_hint_good')}`;
+  } else if (pct <= 30) {
     el.style.color = 'var(--t2)';
-    el.textContent = t('ls_hint_typical');
+    el.textContent = `= ${pctStr} of purchase price — ${t('ls_hint_typical')}`;
   } else {
     el.style.color = 'var(--orange)';
-    el.textContent = t('ls_hint_high');
+    el.textContent = `= ${pctStr} of purchase price — ${t('ls_hint_high')}`;
   }
 }
-document.getElementById('f_landshare').addEventListener('input', updateLandshareHint);
+document.getElementById('f_land_value').addEventListener('input', updateLandshareHint);
+document.getElementById('f_price').addEventListener('input', updateLandshareHint);
 updateLandshareHint();
 
 // Bind events to the single, canonical controls (no duplicates)
