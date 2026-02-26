@@ -299,11 +299,17 @@ input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
         <div class="fhalf"><span class="flb">GrESt</span><span class="fsp"></span><input id="f_grunderwerb" class="finp" type="number" value="6.0" step="0.5" style="width:40px;"><span class="funit">%</span></div>
         <div class="fhalf"><span class="flb" data-i18n="f_notary">Notary</span><span class="fsp"></span><input id="f_notary" class="finp" type="number" value="2.0" step="0.1" style="width:40px;"><span class="funit">%</span></div>
       </div>
-      <div class="frow"><span class="flb" data-i18n="f_land_value">Land value</span><span class="fsp"></span><input id="f_land_value" class="finp" type="number" value="84000" style="width:70px;"><span class="funit">€</span></div>
-      <div class="frow"><span class="flb" data-i18n="f_agent">Makler</span><span class="fsp"></span><input id="f_agent" class="finp" type="number" value="0" min="0" max="5" step="0.5" style="width:40px;"><span class="funit">%</span></div>
-      <div class="frow" style="padding-top:4px;padding-bottom:6px;">
+      <div class="frow stack">
+        <div style="display:flex;align-items:center;gap:8px;width:100%;">
+          <span class="flb" data-i18n="f_land_value">Land value</span>
+          <span class="fsp"></span>
+          <input id="f_land_value" class="finp" type="number" value="84000" style="width:65px;">
+          <span class="funit">€</span>
+          <span id="ls_pct_inline" class="funit" style="font-weight:600;min-width:48px;text-align:right;"></span>
+        </div>
         <span id="landshare_hint" class="fhint"></span>
       </div>
+      <div class="frow"><span class="flb" data-i18n="f_agent">Makler</span><span class="fsp"></span><input id="f_agent" class="finp" type="number" value="0" min="0" max="5" step="0.5" style="width:40px;"><span class="funit">%</span></div>
     </div>
   </div>
 
@@ -1098,23 +1104,15 @@ function updateLandshareHint() {
   const landVal = parseFloat(document.getElementById('f_land_value').value) || 0;
   const price   = parseFloat(document.getElementById('f_price').value)      || 1;
   const pct     = price > 0 ? (landVal / price * 100) : 0;
-  const el = document.getElementById('landshare_hint');
-  if (!el) return;
-  const pctStr = pct.toFixed(1) + '%';
-  const ofPrice = t('ls_of_price');
-  if (pct < 10) {
-    el.style.color = 'var(--green)';
-    el.textContent = `= ${pctStr} ${ofPrice} — ${t('ls_hint_excellent')}`;
-  } else if (pct <= 20) {
-    el.style.color = 'var(--blue)';
-    el.textContent = `= ${pctStr} ${ofPrice} — ${t('ls_hint_good')}`;
-  } else if (pct <= 30) {
-    el.style.color = 'var(--t2)';
-    el.textContent = `= ${pctStr} ${ofPrice} — ${t('ls_hint_typical')}`;
-  } else {
-    el.style.color = 'var(--orange)';
-    el.textContent = `= ${pctStr} ${ofPrice} — ${t('ls_hint_high')}`;
-  }
+  let color, qualText;
+  if      (pct < 10)  { color = 'var(--green)';  qualText = t('ls_hint_excellent'); }
+  else if (pct <= 20) { color = 'var(--blue)';   qualText = t('ls_hint_good'); }
+  else if (pct <= 30) { color = 'var(--t2)';     qualText = t('ls_hint_typical'); }
+  else                { color = 'var(--orange)';  qualText = t('ls_hint_high'); }
+  const pctInline = document.getElementById('ls_pct_inline');
+  if (pctInline) { pctInline.textContent = `= ${pct.toFixed(1)}%`; pctInline.style.color = color; }
+  const hint = document.getElementById('landshare_hint');
+  if (hint) { hint.textContent = qualText; hint.style.color = color; }
 }
 document.getElementById('f_land_value').addEventListener('input', updateLandshareHint);
 document.getElementById('f_price').addEventListener('input', updateLandshareHint);
