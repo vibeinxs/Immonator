@@ -127,7 +127,7 @@ input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
 .ch{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--border);}
 .ct{font-size:13px;font-weight:600;letter-spacing:-.2px;}
 .ctag{font-size:11px;font-weight:500;padding:3px 8px;border-radius:6px;background:var(--s2);color:var(--t2);}
-.ctag.g{background:#d1fadf;color:#1a7f3c;}
+.ctag.g{background:#d1fadf;color:#1a7f3c;}.ctag.or{background:#fff3e0;color:#c15200;}
 .cb{padding:14px 16px;}
 /* Bar chart */
 .bw{display:flex;align-items:flex-end;gap:8px;height:80px;}
@@ -443,6 +443,24 @@ input[type=range]{width:100%;min-width:0;flex:1 1 auto;}
         <div class="mc"><div class="mv" id="mv_nk">—</div><div class="ml" data-i18n="mc_nk_lbl">Closing Costs</div><div class="mb" id="mb_nk">—</div></div>
       </div>
 
+      <div class="card" style="margin-bottom:12px;">
+        <div class="ch">
+          <span class="ct" data-i18n="ls_card_title">Land Share (Grundstücksanteil)</span>
+          <span class="ctag" id="ls_pct_badge">—</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:24px;padding:14px 16px 10px;">
+          <div>
+            <div class="mv" id="ls_eur_value">—</div>
+            <div class="ml" data-i18n="ls_label_value">Land value</div>
+          </div>
+          <div>
+            <div class="mv" id="ls_pct_value">—</div>
+            <div class="ml" data-i18n="ls_label_pct">of purchase price</div>
+          </div>
+        </div>
+        <div style="padding:0 16px 14px;font-size:12px;color:var(--t2);line-height:1.6;" id="ls_expl" data-i18n="ls_explanation">In Germany, land cannot be depreciated — only the building qualifies for AfA (§7 EStG). A lower land share means a larger AfA basis and higher annual tax deductions. Values under 10% are considered excellent for tax efficiency.</div>
+      </div>
+
       <div class="twoc">
         <div class="card">
           <div class="ch"><span class="ct" data-i18n="card_cashflow">Annual Cash Flow</span><span class="ctag" data-i18n="tag_basecase">Base Case</span></div>
@@ -573,6 +591,9 @@ const T = {
     f_address:'Address', f_area:'Area', f_built:'Built', f_condition:'Condition',
     opt_existing:'Existing building', opt_partial:'Partially renovated', opt_newbuild:'New build (5% AfA)',
     f_energy_class:'Energy class', opt_energy_unknown:'Unknown',
+    ls_card_title:'Land Share (Grundstücksanteil)',
+    ls_label_value:'Land value', ls_label_pct:'of purchase price',
+    ls_explanation:'In Germany, land (Grundstück) cannot be depreciated — only the building portion qualifies for AfA (§7 EStG). A lower land share means a larger AfA basis and higher annual tax deductions. Values under 10% are considered excellent for tax efficiency.',
     f_price:'Purchase price', f_financed:'Bank financed', f_equity:'Equity', f_interest:'Interest',
     f_repayment:'Repayment', f_notary:'Notary', f_landshare:'Land share', f_agent:'Makler',
     ls_hint_excellent:'< 10% — excellent for AfA (maximises depreciation basis)',
@@ -644,6 +665,9 @@ const T = {
     f_address:'Adresse', f_area:'Fläche', f_built:'Bj.', f_condition:'Zustand',
     opt_existing:'Bestandsgebäude', opt_partial:'Teilsaniert', opt_newbuild:'Neubau (5% AfA)',
     f_energy_class:'Energieklasse', opt_energy_unknown:'Unbekannt',
+    ls_card_title:'Grundstücksanteil (Land Share)',
+    ls_label_value:'Grundstückswert', ls_label_pct:'des Kaufpreises',
+    ls_explanation:'Grundstücke sind steuerlich nicht abschreibungsfähig — nur der Gebäudeanteil qualifiziert für die AfA (§7 EStG). Ein geringerer Grundstücksanteil vergrößert die AfA-Basis und erhöht den jährlichen Steuervorteil. Werte unter 10 % gelten als steuerlich besonders vorteilhaft.',
     f_price:'Kaufpreis', f_financed:'Bankfinanziert', f_equity:'EK', f_interest:'Zinssatz',
     f_repayment:'Tilgung', f_notary:'Notar', f_landshare:'Grundst.', f_agent:'Makler',
     ls_hint_excellent:'< 10% — ausgezeichnet für AfA (maximiert Abschreibungsbasis)',
@@ -974,6 +998,19 @@ function render(d,p) {
   afaRows.push([t('afa_taxrate'),fP(p.tax_rate),t('afa_taxrate_note')]);
   afaRows.push([t('afa_saving'),fmt(d.afa_tax_saving_yr1),t('afa_saving_note')]);
   document.getElementById('afaBody').innerHTML=afaRows.map(([a,b,c])=>`<tr><td>${a}</td><td><strong style="font-family:'DM Mono',monospace">${b}</strong></td><td style="color:var(--t3)">${c}</td></tr>`).join('');
+
+  // Land share overview card
+  const landShareEur = p.purchase_price * p.land_share_pct / 100;
+  const lsBadge = document.getElementById('ls_pct_badge');
+  if (lsBadge) {
+    lsBadge.textContent = `${p.land_share_pct}%`;
+    lsBadge.className = 'ctag' + (p.land_share_pct < 10 ? ' g' : p.land_share_pct > 30 ? ' or' : '');
+    const lsEurEl = document.getElementById('ls_eur_value');
+    lsEurEl.textContent = fmt(landShareEur);
+    lsEurEl.className = 'mv' + (p.land_share_pct < 10 ? ' ok' : p.land_share_pct > 30 ? ' bad' : '');
+    document.getElementById('ls_pct_value').textContent = fP(p.land_share_pct);
+    sT('ls_expl', t('ls_explanation'));
+  }
 }
 
 // ═══════════════════════════ TABS ═════════════════════════════════════════
