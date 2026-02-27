@@ -18,27 +18,47 @@ const SHELL_STYLES = `
   .immo-nav-link {
     text-decoration: none;
     transition: color 0.15s;
+    color: var(--color-text-secondary);
+    border-bottom: 2px solid transparent;
   }
   .immo-nav-link:hover {
-    color: var(--color-text-primary) !important;
+    color: var(--color-text-primary);
+  }
+  .immo-nav-link--active {
+    color: var(--color-brand);
+    border-bottom-color: var(--color-brand);
+  }
+  .immo-feedback-btn {
+    color: var(--color-text-secondary);
+    transition: color 0.15s;
   }
   .immo-feedback-btn:hover {
-    color: var(--color-text-primary) !important;
+    color: var(--color-text-primary);
   }
   .immo-avatar-btn:hover {
     opacity: 0.85;
   }
+  .immo-signout-btn {
+    background: none;
+    transition: background 0.15s;
+  }
   .immo-signout-btn:hover {
-    background: var(--color-danger-bg) !important;
+    background: var(--color-danger-bg);
+  }
+  .immo-desktop-nav {
+    display: flex;
+  }
+  .immo-bottom-nav {
+    display: flex;
   }
   .immo-page-content {
     padding: 32px;
   }
   @media (min-width: 768px) {
-    .immo-bottom-nav { display: none !important; }
+    .immo-bottom-nav { display: none; }
   }
   @media (max-width: 767px) {
-    .immo-desktop-nav { display: none !important; }
+    .immo-desktop-nav { display: none; }
     .immo-page-content {
       padding: 16px;
       padding-bottom: 72px;
@@ -369,13 +389,12 @@ function UserMenu() {
             onClick={() => { setOpen(false); logout(); }}
             style={{
               width: '100%', textAlign: 'left',
-              background: 'none', border: 'none',
+              border: 'none',
               padding: '8px 14px',
               fontSize: 'var(--text-sm)',
               fontFamily: 'var(--font-body)',
               color: 'var(--color-danger)',
               cursor: 'pointer',
-              transition: 'background 0.15s',
             }}
           >
             Sign out
@@ -429,28 +448,16 @@ function TopNav({ onFeedback }: { onFeedback: () => void }) {
       <nav
         className="immo-desktop-nav"
         aria-label="Main navigation"
-        style={{
-          flex: 1,
-          display: 'flex',
-          justifyContent: 'center',
-          gap: 4,
-        }}
+        style={{ flex: 1, justifyContent: 'center', gap: 4 }}
       >
         {NAV_ITEMS.map(({ label, to }) => (
           <NavLink
             key={to}
             to={to}
-            className="immo-nav-link"
-            style={({ isActive }) => ({
-              padding: '6px 14px',
-              borderRadius: 6,
-              fontSize: 'var(--text-sm)',
-              fontWeight: 500,
-              color: isActive ? 'var(--color-brand)' : 'var(--color-text-secondary)',
-              borderBottom: isActive
-                ? '2px solid var(--color-brand)'
-                : '2px solid transparent',
-            })}
+            className={({ isActive }) =>
+              `immo-nav-link${isActive ? ' immo-nav-link--active' : ''}`
+            }
+            style={{ padding: '6px 14px', borderRadius: 6, fontSize: 'var(--text-sm)', fontWeight: 500 }}
           >
             {label}
           </NavLink>
@@ -472,10 +479,8 @@ function TopNav({ onFeedback }: { onFeedback: () => void }) {
             padding: '5px 12px',
             fontSize: 'var(--text-sm)',
             fontFamily: 'var(--font-body)',
-            color: 'var(--color-text-secondary)',
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', gap: 6,
-            transition: 'color 0.15s',
             whiteSpace: 'nowrap',
           }}
         >
@@ -499,7 +504,6 @@ function BottomNav() {
         height: 56,
         background: 'var(--color-bg-surface)',
         borderTop: '1px solid var(--color-border)',
-        display: 'flex',
       }}
     >
       {NAV_ITEMS.map(({ label, icon, to }) => (
