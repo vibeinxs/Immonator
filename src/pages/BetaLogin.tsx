@@ -1,5 +1,6 @@
 import { useState, type FormEvent, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { setDisplayName } from '../lib/auth';
 
 const TOKEN_KEY = 'immo_token';
 const USER_ID_KEY = 'immo_user_id';
@@ -208,7 +209,8 @@ export function BetaLogin() {
       }
       localStorage.setItem(TOKEN_KEY, body.token);
       localStorage.setItem(USER_ID_KEY, body.user_id ?? body.userId ?? '');
-      navigate('/dashboard', { replace: true });
+      setDisplayName(body.display_name ?? body.name ?? name.trim());
+      navigate('/properties', { replace: true });
     } catch {
       setError('Network error. Please try again.');
     } finally {
