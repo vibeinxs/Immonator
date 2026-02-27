@@ -68,6 +68,13 @@ function FeedbackModal({ onClose }: { onClose: () => void }) {
   const [success, setSuccess]     = useState(false);
   const [error, setError]         = useState('');
 
+  useEffect(() => {
+    if (success) {
+      const timerId = setTimeout(onClose, 2000);
+      return () => clearTimeout(timerId);
+    }
+  }, [success, onClose]);
+
   async function handleSend() {
     setLoading(true);
     setError('');
@@ -82,7 +89,6 @@ function FeedbackModal({ onClose }: { onClose: () => void }) {
       return;
     }
     setSuccess(true);
-    setTimeout(onClose, 2000);
   }
 
   return (
