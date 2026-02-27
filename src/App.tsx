@@ -9,34 +9,10 @@ function RootRedirect() {
 }
 
 // Placeholder — replace with real page components as they are built.
-function Properties() {
+function PlaceholderPage({ title }: { title: string }) {
   return (
     <div style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-primary)' }}>
-      <h1 style={{ fontFamily: 'var(--font-display)', marginTop: 0 }}>Properties</h1>
-    </div>
-  );
-}
-
-function Portfolio() {
-  return (
-    <div style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-primary)' }}>
-      <h1 style={{ fontFamily: 'var(--font-display)', marginTop: 0 }}>My Portfolio</h1>
-    </div>
-  );
-}
-
-function Markets() {
-  return (
-    <div style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-primary)' }}>
-      <h1 style={{ fontFamily: 'var(--font-display)', marginTop: 0 }}>Markets</h1>
-    </div>
-  );
-}
-
-function Strategy() {
-  return (
-    <div style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-primary)' }}>
-      <h1 style={{ fontFamily: 'var(--font-display)', marginTop: 0 }}>Strategy</h1>
+      <h1 style={{ fontFamily: 'var(--font-display)', marginTop: 0 }}>{title}</h1>
     </div>
   );
 }
@@ -63,10 +39,10 @@ export default function App() {
         <Route path="/dashboard" element={<Navigate to="/properties" replace />} />
 
         {/* Protected — all wrapped in AppShell */}
-        <Route path="/properties" element={<ShellRoute><Properties /></ShellRoute>} />
-        <Route path="/portfolio"  element={<ShellRoute><Portfolio /></ShellRoute>} />
-        <Route path="/markets"    element={<ShellRoute><Markets /></ShellRoute>} />
-        <Route path="/strategy"   element={<ShellRoute><Strategy /></ShellRoute>} />
+        <Route path="/properties" element={<ShellRoute><PlaceholderPage title="Properties" /></ShellRoute>} />
+        <Route path="/portfolio"  element={<ShellRoute><PlaceholderPage title="My Portfolio" /></ShellRoute>} />
+        <Route path="/markets"    element={<ShellRoute><PlaceholderPage title="Markets" /></ShellRoute>} />
+        <Route path="/strategy"   element={<ShellRoute><PlaceholderPage title="Strategy" /></ShellRoute>} />
 
         {/* Catch-all: redirect to root */}
         <Route path="*" element={<Navigate to="/" replace />} />
