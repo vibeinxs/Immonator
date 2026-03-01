@@ -3,3 +3,7 @@
 # Local env files
 .env.local
 .env.*.local
+
+# Local env files
+.env.local
+.env.*.local

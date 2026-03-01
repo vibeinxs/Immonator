@@ -1,17 +1,13 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { isLoggedIn } from './lib/auth';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { AppShell } from './components/layout/AppShell';
+import { Landing }        from './pages/Landing';
 import { BetaLogin }      from './pages/BetaLogin';
 import { Properties }     from './pages/Properties';
 import { PropertyDetail } from './pages/PropertyDetail';
 import { Portfolio }      from './pages/Portfolio';
-import { Strategy }      from './pages/Strategy';
-import { MarketPage }    from './pages/MarketPage';
-
-function RootRedirect() {
-  return <Navigate to={isLoggedIn() ? '/properties' : '/beta-login'} replace />;
-}
+import { Strategy }       from './pages/Strategy';
+import { MarketPage }     from './pages/MarketPage';
 
 // Placeholder — replace with real page components as they are built.
 function PlaceholderPage({ title }: { title: string }) {
@@ -37,8 +33,8 @@ export default function App() {
         {/* Public */}
         <Route path="/beta-login" element={<BetaLogin />} />
 
-        {/* Root — redirect based on auth state */}
-        <Route path="/" element={<RootRedirect />} />
+        {/* Root — landing page (redirects to /properties if logged in) */}
+        <Route path="/" element={<Landing />} />
 
         {/* Backwards-compat redirect */}
         <Route path="/dashboard" element={<Navigate to="/properties" replace />} />
