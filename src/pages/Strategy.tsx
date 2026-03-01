@@ -128,12 +128,12 @@ function capitalize(s: string): string {
 
 function toRiskStyle(v: unknown): RiskStyle | '' {
   const valid = RISK_OPTIONS.map(o => o.key);
-  return valid.includes(v as RiskStyle) ? (v as RiskStyle) : '';
+  return (typeof v === 'string' && (valid as string[]).includes(v)) ? v as RiskStyle : '';
 }
 
 function toGoal(v: unknown): Goal | '' {
   const valid = GOAL_OPTIONS.map(o => o.key);
-  return valid.includes(v as Goal) ? (v as Goal) : '';
+  return (typeof v === 'string' && (valid as string[]).includes(v)) ? v as Goal : '';
 }
 
 function profileToForm(profile: UserProfile | null): WizardForm {
@@ -572,6 +572,9 @@ function StrategyView({
   onEditProfile: () => void;
   navigate:      (path: string) => void;
 }) {
+  const financing          = strategy.financing          ?? [];
+  const matchingProperties = strategy.matching_properties ?? [];
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
@@ -761,7 +764,7 @@ function StrategyView({
       )}
 
       {/* ── Financing Structure ───────────────────────────────────────────── */}
-      {strategy.financing && strategy.financing.length > 0 && (
+      {financing.length > 0 && (
         <div>
           <p style={{
             margin:        '0 0 12px',
@@ -805,8 +808,8 @@ function StrategyView({
                 </tr>
               </thead>
               <tbody>
-                {strategy.financing.map((row, i) => {
-                  const isLast      = i === strategy.financing.length - 1;
+                {financing.map((row, i) => {
+                  const isLast      = i === financing.length - 1;
                   const highlighted = row.recommended;
                   return (
                     <tr key={row.type} style={{
@@ -894,7 +897,7 @@ function StrategyView({
           }}>
             Properties matching your strategy
           </p>
-          {(strategy.matching_properties?.length ?? 0) > 0 && (
+          {matchingProperties.length > 0 && (
             <button
               onClick={() => navigate('/properties')}
               style={{
@@ -921,7 +924,7 @@ function StrategyView({
           body="Scroll down — these properties from our database match your budget and yield requirements."
         />
 
-        {strategy.matching_properties && strategy.matching_properties.length > 0 ? (
+        {matchingProperties.length > 0 ? (
           <div style={{
             marginTop:       12,
             backgroundColor: 'var(--color-bg-surface)',
@@ -929,8 +932,8 @@ function StrategyView({
             borderRadius:    12,
             overflow:        'hidden',
           }}>
-            {strategy.matching_properties.slice(0, 5).map((prop, i) => {
-              const isLast = i === strategy.matching_properties.slice(0, 5).length - 1;
+            {matchingProperties.slice(0, 5).map((prop, i) => {
+              const isLast = i === matchingProperties.slice(0, 5).length - 1;
               return (
                 <div
                   key={prop.id}
