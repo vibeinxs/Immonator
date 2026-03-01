@@ -5,6 +5,7 @@ import { AppShell } from './components/layout/AppShell';
 import { BetaLogin }      from './pages/BetaLogin';
 import { Properties }     from './pages/Properties';
 import { PropertyDetail } from './pages/PropertyDetail';
+import { Portfolio }      from './pages/Portfolio';
 
 function RootRedirect() {
   return <Navigate to={isLoggedIn() ? '/properties' : '/beta-login'} replace />;
@@ -43,7 +44,7 @@ export default function App() {
         {/* Protected — all wrapped in AppShell */}
         <Route path="/properties"     element={<ShellRoute><Properties />     </ShellRoute>} />
         <Route path="/properties/:id" element={<ShellRoute><PropertyDetail /> </ShellRoute>} />
-        <Route path="/portfolio"  element={<ShellRoute><PlaceholderPage title="My Portfolio" /></ShellRoute>} />
+        <Route path="/portfolio"  element={<ShellRoute><Portfolio /></ShellRoute>} />
         <Route path="/markets"    element={<ShellRoute><PlaceholderPage title="Markets" /></ShellRoute>} />
         <Route path="/strategy"   element={<ShellRoute><PlaceholderPage title="Strategy" /></ShellRoute>} />
 
