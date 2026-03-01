@@ -33,6 +33,10 @@ export const DESIGN = {
     danger:     '#EF4444',
     dangerBg:   '#2D0A0A',
 
+    // Cool (teal — market temperature)
+    cool:   '#0d9488',
+    coolBg: '#042f2e',
+
     // Borders
     border:       '#1E2D40',
     borderStrong: '#2D3F55',

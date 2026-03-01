@@ -8,6 +8,8 @@ import { ContextHint }  from '../components/common/ContextHint';
 import { type Verdict } from '../components/common/VerdictBadge';
 import { Toast }        from '../components/common/Toast';
 import { CompactAnalysisCard } from '../components/analysis/CompactAnalysisCard';
+import { DeepAnalysisReport }  from '../components/analysis/DeepAnalysisReport';
+import { MarketAnalysisCard }  from '../components/analysis/MarketAnalysisCard';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -249,26 +251,9 @@ function StubCard({ icon, label, sub }: { icon: string; label: string; sub: stri
 
 // CompactAnalysisCard is imported from ../components/analysis/CompactAnalysisCard
 
-function DeepAnalysisReport({ propertyId }: { propertyId: string }) {
-  void propertyId;
-  return (
-    <StubCard
-      icon="📋"
-      label="Deep Analysis Report"
-      sub="Full risk assessment and offer price recommendation — component coming soon"
-    />
-  );
-}
+// DeepAnalysisReport is imported from ../components/analysis/DeepAnalysisReport
 
-function MarketAnalysisCard({ city }: { city: string }) {
-  return (
-    <StubCard
-      icon="🗺"
-      label={`Market Analysis · ${city}`}
-      sub="Comparable sales, price trends, and supply/demand — component coming soon"
-    />
-  );
-}
+// MarketAnalysisCard is imported from ../components/analysis/MarketAnalysisCard
 
 function ScenarioModeller({
   propertyId,
