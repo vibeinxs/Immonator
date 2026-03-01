@@ -8,6 +8,7 @@ import { ContextHint }  from '../components/common/ContextHint';
 import { type Verdict } from '../components/common/VerdictBadge';
 import { Toast }        from '../components/common/Toast';
 import { CompactAnalysisCard } from '../components/analysis/CompactAnalysisCard';
+import { AnalysisChat }        from '../components/chat/AnalysisChat';
 import { DeepAnalysisReport }  from '../components/analysis/DeepAnalysisReport';
 import { MarketAnalysisCard }  from '../components/analysis/MarketAnalysisCard';
 
@@ -274,32 +275,7 @@ function ScenarioModeller({
   );
 }
 
-function AnalysisChat({
-  contextType,
-  contextId,
-  title,
-}: {
-  contextType: string;
-  contextId:   string;
-  title:       string;
-}) {
-  void contextType; void contextId;
-  return (
-    <div style={{
-      background:   'var(--color-bg-surface)',
-      border:       '1px solid var(--color-border)',
-      borderRadius: 12,
-      padding:      '20px 24px',
-    }}>
-      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', fontFamily: 'var(--font-body)', marginBottom: 4 }}>
-        Ask about {title}
-      </div>
-      <div style={{ fontSize: 13, color: 'var(--color-text-muted)', fontFamily: 'var(--font-body)' }}>
-        AI chat context — component coming soon
-      </div>
-    </div>
-  );
-}
+// AnalysisChat is imported from ../components/chat/AnalysisChat
 
 // ── Image Gallery ─────────────────────────────────────────────────────────────
 
