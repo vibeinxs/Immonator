@@ -9,6 +9,7 @@ import { LoadingState }  from '../components/common/LoadingState';
 import { Toast }         from '../components/common/Toast';
 import { AnalysisChat }  from '../components/chat/AnalysisChat';
 import type { Verdict }  from '../components/common/VerdictBadge';
+import styles            from './Strategy.module.css';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -107,84 +108,6 @@ const INITIAL_FORM: WizardForm = {
 
 const TOTAL_STEPS = 5;
 
-// ── Styles ────────────────────────────────────────────────────────────────────
-
-const PAGE_STYLES = `
-@keyframes immo-strategy-fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes immo-wizard-step-in {
-  from { opacity: 0; transform: translateX(20px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-@keyframes immo-banner-slide-down {
-  from { opacity: 0; transform: translateY(-100%); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes immo-banner-fade-out {
-  from { opacity: 1; }
-  to   { opacity: 0; }
-}
-.strategy-page {
-  animation: immo-strategy-fade-in 300ms ease forwards;
-}
-.wizard-step-content {
-  animation: immo-wizard-step-in 220ms ease forwards;
-}
-.strategy-option-card {
-  cursor: pointer;
-  transition: border-color 150ms, background-color 150ms;
-}
-.strategy-option-card:hover {
-  border-color: var(--color-brand) !important;
-}
-.strategy-pill {
-  cursor: pointer;
-  transition: background-color 150ms, color 150ms, border-color 150ms;
-}
-.strategy-pill:hover {
-  border-color: var(--color-brand) !important;
-}
-input[type="range"].strategy-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--color-border-strong);
-  outline: none;
-  cursor: pointer;
-}
-input[type="range"].strategy-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--color-brand);
-  cursor: pointer;
-  box-shadow: 0 0 0 3px rgba(46,107,255,0.2);
-}
-input[type="range"].strategy-slider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--color-brand);
-  cursor: pointer;
-  border: none;
-}
-.strategy-money-input:focus {
-  outline: none;
-  border-color: var(--color-brand) !important;
-  box-shadow: 0 0 0 3px rgba(46,107,255,0.15);
-}
-@media (max-width: 768px) {
-  .strategy-metrics-grid   { grid-template-columns: 1fr !important; }
-  .strategy-criteria-grid  { grid-template-columns: 1fr !important; }
-  .strategy-financing-wrap { overflow-x: auto; }
-}
-`;
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function fmtEur(n?: number): string {
@@ -203,18 +126,28 @@ function capitalize(s: string): string {
   return s.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
+function toRiskStyle(v: unknown): RiskStyle | '' {
+  const valid = RISK_OPTIONS.map(o => o.key);
+  return valid.includes(v as RiskStyle) ? (v as RiskStyle) : '';
+}
+
+function toGoal(v: unknown): Goal | '' {
+  const valid = GOAL_OPTIONS.map(o => o.key);
+  return valid.includes(v as Goal) ? (v as Goal) : '';
+}
+
 function profileToForm(profile: UserProfile | null): WizardForm {
   if (!profile) return { ...INITIAL_FORM };
   return {
-    equity:          profile.equity          ? String(profile.equity)          : '',
-    monthlyIncome:   profile.monthly_income  ? String(profile.monthly_income)  : '',
+    equity:          profile.equity           ? String(profile.equity)          : '',
+    monthlyIncome:   profile.monthly_income   ? String(profile.monthly_income)  : '',
     monthlyExpenses: profile.monthly_expenses ? String(profile.monthly_expenses) : '',
-    riskStyle:       (profile.risk_style as RiskStyle) || '',
-    holdPeriod:      profile.hold_period     || '',
-    goal:            (profile.goal as Goal)  || '',
-    minYield:        profile.min_yield       ?? 5.0,
-    cities:          profile.cities          ?? [],
-    propertyTypes:   profile.property_types  ?? [],
+    riskStyle:       toRiskStyle(profile.risk_style),
+    holdPeriod:      profile.hold_period      || '',
+    goal:            toGoal(profile.goal),
+    minYield:        profile.min_yield        ?? 5.0,
+    cities:          profile.cities           ?? [],
+    propertyTypes:   profile.property_types   ?? [],
   };
 }
 
@@ -261,16 +194,14 @@ function MoneyInput({
         </p>
       )}
       <div
-        className="strategy-money-input"
+        className={styles.moneyInput}
         style={{
-          display:      'flex',
-          alignItems:   'center',
-          height:       64,
-          border:       '1px solid var(--color-border-strong)',
-          borderRadius: 10,
-          overflow:     'hidden',
+          display:         'flex',
+          alignItems:      'center',
+          height:          64,
+          borderRadius:    10,
+          overflow:        'hidden',
           backgroundColor: 'var(--color-bg-elevated)',
-          transition:   'border-color 150ms, box-shadow 150ms',
         }}
       >
         <span style={{
@@ -326,18 +257,16 @@ function OptionCard({
 }) {
   return (
     <div
-      className="strategy-option-card"
+      className={`${styles.optionCard}${selected ? ' ' + styles.optionCardSelected : ''}`}
       onClick={onClick}
       role="radio"
       aria-checked={selected}
       style={{
-        display:         'flex',
-        alignItems:      'flex-start',
-        gap:             14,
-        padding:         '16px 18px',
-        borderRadius:    10,
-        border:          `2px solid ${selected ? 'var(--color-brand)' : 'var(--color-border)'}`,
-        backgroundColor: selected ? 'var(--color-brand-subtle)' : 'var(--color-bg-elevated)',
+        display:      'flex',
+        alignItems:   'flex-start',
+        gap:          14,
+        padding:      '16px 18px',
+        borderRadius: 10,
       }}
     >
       <span style={{ fontSize: 26, lineHeight: 1, flexShrink: 0, marginTop: 2 }}>{emoji}</span>
@@ -458,7 +387,7 @@ function WizardShell({
       }}>
         <div
           key={step}
-          className="wizard-step-content"
+          className={styles.wizardStep}
           style={{ width: '100%', maxWidth: 520 }}
         >
           {children}
@@ -570,6 +499,7 @@ function StrategyBanner({
     <div
       role="status"
       aria-live="polite"
+      className={fading ? styles.bannerFading : styles.banner}
       style={{
         position:        'fixed',
         top:             56,
@@ -583,9 +513,6 @@ function StrategyBanner({
         alignItems:      'center',
         justifyContent:  'center',
         gap:             16,
-        animation:       fading
-          ? 'immo-banner-fade-out 400ms ease forwards'
-          : 'immo-banner-slide-down 350ms ease forwards',
       }}
     >
       <span style={{
@@ -711,10 +638,7 @@ function StrategyView({
       </div>
 
       {/* ── Metrics Row ──────────────────────────────────────────────────── */}
-      <div
-        className="strategy-metrics-grid"
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}
-      >
+      <div className={styles.metricsGrid}>
         <MetricCard
           label="Target Yield"
           value={strategy.target_yield != null ? `${strategy.target_yield.toFixed(1)}%` : '—'}
@@ -809,10 +733,7 @@ function StrategyView({
           }}>
             Key Criteria
           </p>
-          <div
-            className="strategy-criteria-grid"
-            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}
-          >
+          <div className={styles.criteriaGrid}>
             {strategy.key_criteria.map((criterion, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                 <span style={{
@@ -854,7 +775,7 @@ function StrategyView({
             Financing Structure
           </p>
           <div
-            className="strategy-financing-wrap"
+            className={styles.financingWrap}
             style={{
               backgroundColor: 'var(--color-bg-surface)',
               border:          '1px solid var(--color-border)',
@@ -885,7 +806,7 @@ function StrategyView({
               </thead>
               <tbody>
                 {strategy.financing.map((row, i) => {
-                  const isLast      = i === strategy.financing!.length - 1;
+                  const isLast      = i === strategy.financing.length - 1;
                   const highlighted = row.recommended;
                   return (
                     <tr key={row.type} style={{
@@ -1009,10 +930,11 @@ function StrategyView({
             overflow:        'hidden',
           }}>
             {strategy.matching_properties.slice(0, 5).map((prop, i) => {
-              const isLast = i === Math.min(4, (strategy.matching_properties?.length ?? 1) - 1);
+              const isLast = i === strategy.matching_properties.slice(0, 5).length - 1;
               return (
                 <div
                   key={prop.id}
+                  className={styles.matchRow}
                   onClick={() => navigate(`/properties/${prop.id}`)}
                   style={{
                     display:      'flex',
@@ -1022,8 +944,6 @@ function StrategyView({
                     borderBottom: isLast ? undefined : '1px solid var(--color-border)',
                     cursor:       'pointer',
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--color-bg-subtle)')}
-                  onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                 >
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
@@ -1144,7 +1064,7 @@ export function Strategy() {
     2: form.monthlyIncome.trim() !== '' && form.monthlyExpenses.trim() !== '',
     3: form.riskStyle !== '' && form.holdPeriod !== '',
     4: form.goal !== '',
-    5: form.cities.length > 0,
+    5: form.cities.length > 0 && form.propertyTypes.length > 0,
   };
 
   // ── Wizard navigation ───────────────────────────────────────────────────
@@ -1178,11 +1098,9 @@ export function Strategy() {
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <>
-      <style>{PAGE_STYLES}</style>
-
       {/* ── Main content ─────────────────────────────────────────────────── */}
       <div
-        className="strategy-page"
+        className={styles.page}
         style={{ padding: '40px 24px', maxWidth: 900, margin: '0 auto' }}
       >
         {strategy ? (
@@ -1386,7 +1304,7 @@ export function Strategy() {
                 step={0.5}
                 value={form.minYield}
                 onChange={e => setForm(f => ({ ...f, minYield: parseFloat(e.target.value) }))}
-                className="strategy-slider"
+                className={styles.slider}
               />
               <p style={{
                 marginTop:  10,
@@ -1412,7 +1330,7 @@ export function Strategy() {
                   return (
                     <button
                       key={city}
-                      className="strategy-pill"
+                      className={`${styles.pill}${selected ? ' ' + styles.pillSelected : ''}`}
                       onClick={() => setForm(f => ({
                         ...f,
                         cities: selected
@@ -1420,14 +1338,10 @@ export function Strategy() {
                           : [...f.cities, city],
                       }))}
                       style={{
-                        padding:         '8px 18px',
-                        borderRadius:    20,
-                        border:          `1px solid ${selected ? 'var(--color-brand)' : 'var(--color-border)'}`,
-                        backgroundColor: selected ? 'var(--color-brand)' : 'var(--color-bg-elevated)',
-                        color:           selected ? '#fff' : 'var(--color-text-secondary)',
-                        cursor:          'pointer',
-                        fontSize:        13,
-                        fontFamily:      'var(--font-body)',
+                        padding:      '8px 18px',
+                        borderRadius: 20,
+                        fontSize:     13,
+                        fontFamily:   'var(--font-body)',
                       }}
                     >
                       {city}
@@ -1443,7 +1357,7 @@ export function Strategy() {
                   return (
                     <button
                       key={type}
-                      className="strategy-pill"
+                      className={`${styles.pill}${selected ? ' ' + styles.pillSelected : ''}`}
                       onClick={() => setForm(f => ({
                         ...f,
                         propertyTypes: selected
@@ -1451,14 +1365,10 @@ export function Strategy() {
                           : [...f.propertyTypes, type],
                       }))}
                       style={{
-                        padding:         '8px 18px',
-                        borderRadius:    20,
-                        border:          `1px solid ${selected ? 'var(--color-brand)' : 'var(--color-border)'}`,
-                        backgroundColor: selected ? 'var(--color-brand)' : 'var(--color-bg-elevated)',
-                        color:           selected ? '#fff' : 'var(--color-text-secondary)',
-                        cursor:          'pointer',
-                        fontSize:        13,
-                        fontFamily:      'var(--font-body)',
+                        padding:      '8px 18px',
+                        borderRadius: 20,
+                        fontSize:     13,
+                        fontFamily:   'var(--font-body)',
                       }}
                     >
                       {type}
