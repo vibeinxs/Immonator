@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api }          from '../../lib/api';
 import { LoadingState } from '../common/LoadingState';
+import { Toast }        from '../common/Toast';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -25,7 +26,7 @@ const TEMP_CONFIG: Record<MarketTemperature, { label: string; color: string; bg:
   hot:     { label: 'Hot',     color: 'var(--color-danger)',        bg: 'var(--color-danger-bg)'   },
   warm:    { label: 'Warm',    color: 'var(--color-warning)',       bg: 'var(--color-warning-bg)'  },
   neutral: { label: 'Neutral', color: 'var(--color-brand)',         bg: 'var(--color-brand-subtle)' },
-  cool:    { label: 'Cool',    color: '#0d9488',                    bg: '#042f2e'                  },
+  cool:    { label: 'Cool',    color: 'var(--color-cool)',          bg: 'var(--color-cool-bg)'     },
   cold:    { label: 'Cold',    color: 'var(--color-text-secondary)', bg: 'var(--color-bg-elevated)' },
 };
 
@@ -132,13 +133,24 @@ function MarketCardSkeleton({ city }: { city: string }) {
   );
 }
 
+// ── Styles ────────────────────────────────────────────────────────────────────
+
+const STYLES = `
+  .mac-market-link {
+    transition: opacity 150ms;
+  }
+  .mac-market-link:hover {
+    opacity: 0.75;
+  }
+`;
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function MarketAnalysisCard({ city }: { city: string }) {
   const [stats,        setStats]        = useState<MarketStats | null>(null);
   const [analysis,     setAnalysis]     = useState<MarketAnalysisData | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
-  const [linkHovered,  setLinkHovered]  = useState(false);
+  const [errorMsg,     setErrorMsg]     = useState<string | null>(null);
 
   useEffect(() => {
     if (!city) return;
@@ -147,13 +159,21 @@ export function MarketAnalysisCard({ city }: { city: string }) {
     // Fire both fetches in parallel — stats first (fast), analysis second (may be slower)
     api.get<MarketStats>(`/api/analysis/market/${encodeURIComponent(city)}/stats`).then((res) => {
       if (cancelled) return;
-      if (res.data) setStats(res.data);
+      if (res.error) {
+        setErrorMsg('Failed to load market stats');
+      } else if (res.data) {
+        setStats(res.data);
+      }
       setStatsLoading(false);
     });
 
     api.get<MarketAnalysisData>(`/api/analysis/market/${encodeURIComponent(city)}`).then((res) => {
       if (cancelled) return;
-      if (res.data) setAnalysis(res.data);
+      if (res.error) {
+        setErrorMsg('Failed to load market analysis');
+      } else if (res.data) {
+        setAnalysis(res.data);
+      }
     });
 
     return () => { cancelled = true; };
@@ -177,6 +197,7 @@ export function MarketAnalysisCard({ city }: { city: string }) {
       flexDirection: 'column',
       gap:           12,
     }}>
+      <style>{STYLES}</style>
       {/* ── Header row ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
         <span style={{
@@ -235,6 +256,7 @@ export function MarketAnalysisCard({ city }: { city: string }) {
       <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 10, marginTop: 2 }}>
         <a
           href={`/markets/${encodeURIComponent(city)}`}
+          className="mac-market-link"
           style={{
             fontSize:       13,
             fontFamily:     'var(--font-body)',
@@ -243,15 +265,17 @@ export function MarketAnalysisCard({ city }: { city: string }) {
             display:        'inline-flex',
             alignItems:     'center',
             gap:            4,
-            opacity:        linkHovered ? 0.75 : 1,
-            transition:     'opacity 150ms',
           }}
-          onMouseEnter={() => setLinkHovered(true)}
-          onMouseLeave={() => setLinkHovered(false)}
         >
           View Full Market Report →
         </a>
       </div>
+
+      {errorMsg && (
+        <React.Fragment key={errorMsg}>
+          <Toast message={errorMsg} onDone={() => setErrorMsg(null)} />
+        </React.Fragment>
+      )}
     </div>
   );
 }
