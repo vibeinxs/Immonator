@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { api }      from '../../lib/api';
 import { getToken } from '../../lib/auth';
+import styles       from './AnalysisChat.module.css';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? '';
 
@@ -12,77 +13,6 @@ interface ChatMessage {
   content:    string;
   created_at: string;
 }
-
-// ── Styles ────────────────────────────────────────────────────────────────────
-
-const STYLES = `
-  @keyframes ac-dot-pulse {
-    0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
-    40%           { opacity: 1;   transform: scale(1);   }
-  }
-  @keyframes ac-msg-in {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0);   }
-  }
-  .ac-chip {
-    background:    var(--color-bg-elevated);
-    border:        1px solid var(--color-border);
-    border-radius: 20px;
-    padding:       6px 14px;
-    font-size:     13px;
-    font-family:   var(--font-body);
-    color:         var(--color-text-secondary);
-    cursor:        pointer;
-    transition:    border-color 150ms, color 150ms;
-    white-space:   nowrap;
-  }
-  .ac-chip:hover {
-    border-color: var(--color-border-strong);
-    color:        var(--color-text-primary);
-  }
-  .ac-input {
-    flex:          1;
-    background:    var(--color-bg-elevated);
-    border:        1px solid var(--color-border);
-    border-radius: 8px;
-    padding:       8px 12px;
-    font-size:     14px;
-    font-family:   var(--font-body);
-    color:         var(--color-text-primary);
-    outline:       none;
-    transition:    border-color 150ms;
-  }
-  .ac-input:focus {
-    border-color: var(--color-brand);
-  }
-  .ac-input::placeholder {
-    color: var(--color-text-muted);
-  }
-  .ac-input:disabled {
-    opacity: 0.5;
-    cursor:  default;
-  }
-  .ac-send-btn {
-    background:    var(--color-brand);
-    border:        none;
-    border-radius: 8px;
-    width:         38px;
-    height:        38px;
-    display:       flex;
-    align-items:   center;
-    justify-content: center;
-    cursor:        pointer;
-    flex-shrink:   0;
-    transition:    opacity 150ms;
-  }
-  .ac-send-btn:hover:not(:disabled) {
-    opacity: 0.85;
-  }
-  .ac-send-btn:disabled {
-    opacity: 0.45;
-    cursor:  default;
-  }
-`;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -157,20 +87,9 @@ function SimpleMarkdown({ content }: { content: string }) {
 function TypingIndicator() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 2px' }}>
-      {[0, 160, 320].map((delay) => (
-        <span
-          key={delay}
-          style={{
-            width:          7,
-            height:         7,
-            borderRadius:   '50%',
-            background:     'var(--color-text-muted)',
-            display:        'inline-block',
-            animation:      'ac-dot-pulse 1.4s ease-in-out infinite',
-            animationDelay: `${delay}ms`,
-          }}
-        />
-      ))}
+      <span className={`${styles.dot} ${styles.dot1}`} />
+      <span className={`${styles.dot} ${styles.dot2}`} />
+      <span className={`${styles.dot} ${styles.dot3}`} />
     </div>
   );
 }
@@ -180,12 +99,8 @@ function TypingIndicator() {
 function UserBubble({ msg, animate }: { msg: ChatMessage; animate: boolean }) {
   return (
     <div
-      style={{
-        display:       'flex',
-        flexDirection: 'column',
-        alignItems:    'flex-end',
-        animation:     animate ? 'ac-msg-in 200ms ease both' : undefined,
-      }}
+      className={animate ? styles.msgIn : undefined}
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}
     >
       <div
         style={{
@@ -227,12 +142,8 @@ function AssistantBubble({
 }) {
   return (
     <div
-      style={{
-        display:       'flex',
-        flexDirection: 'column',
-        alignItems:    'flex-start',
-        animation:     animate ? 'ac-msg-in 200ms ease both' : undefined,
-      }}
+      className={animate ? styles.msgIn : undefined}
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
     >
       <div
         style={{
@@ -311,12 +222,12 @@ export function AnalysisChat({
     if (!trimmed || isStreaming) return;
 
     const userMsg: ChatMessage = {
-      id:         `user-${Date.now()}`,
+      id:         `user-${crypto.randomUUID()}`,
       role:       'user',
       content:    trimmed,
       created_at: new Date().toISOString(),
     };
-    const pendingId = `pending-${Date.now()}`;
+    const pendingId = `pending-${crypto.randomUUID()}`;
     const pendingMsg: ChatMessage = {
       id:         pendingId,
       role:       'assistant',
@@ -374,7 +285,7 @@ export function AnalysisChat({
 
       // Settle with a stable id now that streaming is complete
       setMessages(prev =>
-        prev.map(m => m.id === pendingId ? { ...m, id: `assistant-${Date.now()}` } : m)
+        prev.map(m => m.id === pendingId ? { ...m, id: `assistant-${crypto.randomUUID()}` } : m)
       );
     } catch {
       setMessages(prev => prev.filter(m => m.id !== pendingId));
@@ -401,20 +312,24 @@ export function AnalysisChat({
         overflow:     'hidden',
       }}
     >
-      <style>{STYLES}</style>
-
       {/* ── Header ── */}
-      <div
+      <button
         onClick={() => setIsExpanded(e => !e)}
+        aria-expanded={isExpanded}
+        aria-controls="ac-body"
         style={{
           display:        'flex',
           justifyContent: 'space-between',
           alignItems:     'center',
+          width:          '100%',
           padding:        '12px 16px',
           cursor:         'pointer',
           background:     'var(--color-bg-elevated)',
+          border:         'none',
           borderBottom:   isExpanded ? '1px solid var(--color-border)' : 'none',
-          userSelect:     'none',
+          borderRadius:   0,
+          font:           'inherit',
+          textAlign:      'left',
         }}
       >
         <span
@@ -446,11 +361,11 @@ export function AnalysisChat({
             strokeLinejoin="round"
           />
         </svg>
-      </div>
+      </button>
 
       {/* ── Expanded body ── */}
       {isExpanded && (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div id="ac-body" style={{ display: 'flex', flexDirection: 'column' }}>
 
           {/* Message area */}
           <div
@@ -467,7 +382,7 @@ export function AnalysisChat({
             {showChips && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '8px 0' }}>
                 {SUGGESTIONS.map((s) => (
-                  <button key={s} className="ac-chip" onClick={() => sendMessage(s)}>
+                  <button key={s} className={styles.chip} onClick={() => sendMessage(s)}>
                     {s}
                   </button>
                 ))}
@@ -504,7 +419,7 @@ export function AnalysisChat({
             }}
           >
             <input
-              className="ac-input"
+              className={styles.input}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -512,7 +427,7 @@ export function AnalysisChat({
               disabled={isStreaming}
             />
             <button
-              className="ac-send-btn"
+              className={styles.sendBtn}
               onClick={() => sendMessage(inputValue)}
               disabled={isStreaming || !inputValue.trim()}
               aria-label="Send message"
