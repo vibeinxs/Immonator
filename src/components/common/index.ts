@@ -6,5 +6,7 @@ export { NumberTicker }  from './NumberTicker';
 export { LockedButton }  from './LockedButton';
 export { WaitlistModal } from './WaitlistModal';
 export { VerdictBadge }  from './VerdictBadge';
+export { Toast }         from './Toast';
 
-export type { Verdict } from './VerdictBadge';
+export type { Verdict }    from './VerdictBadge';
+export type { ToastProps } from './Toast';
