@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api }           from '../../lib/api';
 import { SectionCard }   from '../common/SectionCard';
 import { LockedButton }  from '../common/LockedButton';
@@ -255,8 +255,12 @@ function DueDiligenceChecklist({
 
   const [checked, setChecked] = useState<Set<number>>(() => {
     try {
-      const raw = localStorage.getItem(key);
-      return raw ? new Set(JSON.parse(raw) as number[]) : new Set();
+      const raw    = localStorage.getItem(key);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'number')) {
+        return new Set(parsed as number[]);
+      }
+      return new Set();
     } catch {
       return new Set();
     }
@@ -323,6 +327,7 @@ function DueDiligenceChecklist({
 // ── State A — Not yet generated ───────────────────────────────────────────────
 
 function NotYetGenerated({ onStart }: { onStart: () => void }) {
+  const [isHovered, setIsHovered] = useState(false);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
       <button
@@ -331,7 +336,7 @@ function NotYetGenerated({ onStart }: { onStart: () => void }) {
           display:      'block',
           width:        '100%',
           height:       48,
-          background:   'var(--color-brand)',
+          background:   isHovered ? 'var(--color-brand-hover)' : 'var(--color-brand)',
           color:        '#fff',
           border:       'none',
           borderRadius: 10,
@@ -341,8 +346,8 @@ function NotYetGenerated({ onStart }: { onStart: () => void }) {
           cursor:       'pointer',
           transition:   'background 150ms',
         }}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-brand-hover)'; }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-brand)'; }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         Run Deep Analysis
       </button>
@@ -618,10 +623,9 @@ function Section3_Valuation({ d }: { d: DeepAnalysisData }) {
         )}
 
         {/* Fair-price badge */}
-        {d.is_fairly_priced && (() => {
-          const { label, color, bg } = FAIR_PRICE_CONFIG[d.is_fairly_priced];
-          return <BadgePill label={label} color={color} bg={bg} large />;
-        })()}
+        {d.is_fairly_priced && (
+          <BadgePill {...FAIR_PRICE_CONFIG[d.is_fairly_priced]} large />
+        )}
 
         {/* Commentary */}
         {commentary.map((para, i) => (
@@ -743,10 +747,9 @@ function Section5_Risks({ d }: { d: DeepAnalysisData }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
         {/* Overall risk level */}
-        {d.overall_risk_level && (() => {
-          const { label, color, bg } = RISK_LEVEL_CONFIG[d.overall_risk_level];
-          return <BadgePill label={label} color={color} bg={bg} large />;
-        })()}
+        {d.overall_risk_level && (
+          <BadgePill {...RISK_LEVEL_CONFIG[d.overall_risk_level]} large />
+        )}
 
         {/* Deal breakers alert */}
         {breakers.length > 0 && (
@@ -975,10 +978,9 @@ function Section8_Action({
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
         {/* Action badge */}
-        {d.recommended_action && (() => {
-          const { label, color, bg } = ACTION_CONFIG[d.recommended_action];
-          return <BadgePill label={label} color={color} bg={bg} large />;
-        })()}
+        {d.recommended_action && (
+          <BadgePill {...ACTION_CONFIG[d.recommended_action]} large />
+        )}
 
         {/* Recommended offer price */}
         {d.recommended_offer_price && (
@@ -1128,20 +1130,22 @@ export function DeepAnalysisReport({ propertyId }: { propertyId: string }) {
   const [report,     setReport]     = useState<DeepAnalysisData | null>(null);
   const [errorMsg,   setErrorMsg]   = useState<string | null>(null);
   const [progress,   setProgress]   = useState(0);
-  const initialised = useRef(false);
 
   // ── Initial GET to check if report already exists ──
   useEffect(() => {
-    if (initialised.current) return;
-    initialised.current = true;
+    let ignore = false;
+    setReport(null);
+    setFetchState('idle');
 
     api.get<DeepAnalysisData>(`/api/analysis/deep/${propertyId}`).then((res) => {
-      if (res.data?.status === 'ready') {
+      if (!ignore && res.data?.status === 'ready') {
         setReport(res.data);
         setFetchState('ready');
       }
       // If not_generated or error, stay idle (show button)
     });
+
+    return () => { ignore = true; };
   }, [propertyId]);
 
   // ── Fake progress + polling (while running) ────────────────────────────────

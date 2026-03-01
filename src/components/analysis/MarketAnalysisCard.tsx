@@ -138,6 +138,7 @@ export function MarketAnalysisCard({ city }: { city: string }) {
   const [stats,        setStats]        = useState<MarketStats | null>(null);
   const [analysis,     setAnalysis]     = useState<MarketAnalysisData | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [linkHovered,  setLinkHovered]  = useState(false);
 
   useEffect(() => {
     if (!city) return;
@@ -242,10 +243,11 @@ export function MarketAnalysisCard({ city }: { city: string }) {
             display:        'inline-flex',
             alignItems:     'center',
             gap:            4,
+            opacity:        linkHovered ? 0.75 : 1,
             transition:     'opacity 150ms',
           }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = '0.75'; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = '1'; }}
+          onMouseEnter={() => setLinkHovered(true)}
+          onMouseLeave={() => setLinkHovered(false)}
         >
           View Full Market Report →
         </a>
