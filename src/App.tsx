@@ -7,7 +7,6 @@ import { Properties }     from './pages/Properties';
 import { PropertyDetail } from './pages/PropertyDetail';
 import { Portfolio }      from './pages/Portfolio';
 import { Strategy }      from './pages/Strategy';
-import { MarketPage }    from './pages/MarketPage';
 
 function RootRedirect() {
   return <Navigate to={isLoggedIn() ? '/properties' : '/beta-login'} replace />;
@@ -47,9 +46,8 @@ export default function App() {
         <Route path="/properties"     element={<ShellRoute><Properties />     </ShellRoute>} />
         <Route path="/properties/:id" element={<ShellRoute><PropertyDetail /> </ShellRoute>} />
         <Route path="/portfolio"  element={<ShellRoute><Portfolio /></ShellRoute>} />
-        <Route path="/markets"       element={<ShellRoute><PlaceholderPage title="Markets" /></ShellRoute>} />
-        <Route path="/market/:city" element={<ShellRoute><MarketPage /></ShellRoute>} />
-        <Route path="/strategy"     element={<ShellRoute><Strategy /></ShellRoute>} />
+        <Route path="/markets"    element={<ShellRoute><PlaceholderPage title="Markets" /></ShellRoute>} />
+        <Route path="/strategy"   element={<ShellRoute><Strategy /></ShellRoute>} />
 
         {/* Catch-all: redirect to root */}
         <Route path="*" element={<Navigate to="/" replace />} />
