@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate }    from 'react-router-dom';
 import { api }                       from '../lib/api';
 import { MetricCard, SectionCard, EmptyState, LoadingState } from '../components/common';
-import { VerdictBadge, type Verdict } from '../components/common/VerdictBadge';
 import { AnalysisChat }              from '../components/chat/AnalysisChat';
+import { type MarketTemperature, type Property } from '../components/market/types';
+import { fmtEur, fmtPct }           from '../components/market/helpers';
+import { TemperatureBadge }          from '../components/market/TemperatureBadge';
+import { TextBadge }                 from '../components/market/TextBadge';
+import { TagPill }                   from '../components/market/TagPill';
+import { MarketPropertyCard }        from '../components/market/MarketPropertyCard';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-
-type MarketTemperature = 'hot' | 'warm' | 'neutral' | 'cool' | 'cold';
 
 interface DatabaseStats {
   total_listings:    number;
@@ -25,27 +28,6 @@ interface ValueZone {
 interface Neighbourhood {
   name:   string;
   reason: string;
-}
-
-interface CompactAnalysis {
-  verdict?:          Verdict;
-  one_line_summary?: string;
-}
-
-interface Property {
-  id:               string;
-  url:              string;
-  title?:           string;
-  price?:           number;
-  area_sqm?:        number;
-  rooms?:           number;
-  city?:            string;
-  zip_code?:        string;
-  image_url?:       string;
-  gross_yield?:     number;
-  price_per_sqm?:   number;
-  days_listed?:     number;
-  compact_analysis?: CompactAnalysis;
 }
 
 interface MarketData {
@@ -90,7 +72,7 @@ interface MarketData {
   properties: Property[];
 }
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+// ── Page-level styles ─────────────────────────────────────────────────────────
 
 const PAGE_STYLES = `
 .market-stats-grid {
@@ -129,40 +111,6 @@ const PAGE_STYLES = `
 }
 `;
 
-const TEMP_CONFIG: Record<MarketTemperature, { label: string; color: string; bg: string }> = {
-  hot:     { label: 'Hot',     color: 'var(--color-danger)',         bg: 'var(--color-danger-bg)'    },
-  warm:    { label: 'Warm',    color: 'var(--color-warning)',        bg: 'var(--color-warning-bg)'   },
-  neutral: { label: 'Neutral', color: 'var(--color-brand)',          bg: 'var(--color-brand-subtle)' },
-  cool:    { label: 'Cool',    color: 'var(--color-text-secondary)', bg: 'var(--color-bg-elevated)'  },
-  cold:    { label: 'Cold',    color: 'var(--color-text-muted)',     bg: 'var(--color-bg-subtle)'    },
-};
-
-// Generic badge lookup — values come from the API as underscore_strings.
-const BADGE_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  // buyer_seller_balance
-  sellers_market: { label: 'Sellers Market', color: 'var(--color-danger)',  bg: 'var(--color-danger-bg)'    },
-  balanced:       { label: 'Balanced',       color: 'var(--color-brand)',   bg: 'var(--color-brand-subtle)' },
-  buyers_market:  { label: 'Buyers Market',  color: 'var(--color-success)', bg: 'var(--color-success-bg)'  },
-  // price_level
-  undervalued:    { label: 'Undervalued',    color: 'var(--color-success)', bg: 'var(--color-success-bg)'  },
-  fair_value:     { label: 'Fair Value',     color: 'var(--color-brand)',   bg: 'var(--color-brand-subtle)' },
-  overvalued:     { label: 'Overvalued',     color: 'var(--color-warning)', bg: 'var(--color-warning-bg)'  },
-  high:           { label: 'High',           color: 'var(--color-danger)',  bg: 'var(--color-danger-bg)'   },
-  // price_trend
-  rising_fast:    { label: 'Rising Fast',    color: 'var(--color-danger)',  bg: 'var(--color-danger-bg)'   },
-  rising:         { label: 'Rising',         color: 'var(--color-warning)', bg: 'var(--color-warning-bg)'  },
-  stable:         { label: 'Stable',         color: 'var(--color-brand)',   bg: 'var(--color-brand-subtle)' },
-  declining:      { label: 'Declining',      color: 'var(--color-success)', bg: 'var(--color-success-bg)'  },
-  // yield_assessment
-  excellent:      { label: 'Excellent',      color: 'var(--color-success)', bg: 'var(--color-success-bg)'  },
-  above_average:  { label: 'Above Average',  color: 'var(--color-success)', bg: 'var(--color-success-bg)'  },
-  average:        { label: 'Average',        color: 'var(--color-brand)',   bg: 'var(--color-brand-subtle)' },
-  below_average:  { label: 'Below Average',  color: 'var(--color-warning)', bg: 'var(--color-warning-bg)'  },
-  poor:           { label: 'Poor',           color: 'var(--color-danger)',  bg: 'var(--color-danger-bg)'   },
-};
-
-// ── Shared style objects ──────────────────────────────────────────────────────
-
 const PARA_STYLE: React.CSSProperties = {
   margin:     0,
   fontSize:   14,
@@ -181,256 +129,6 @@ const LABEL_STYLE: React.CSSProperties = {
   fontFamily:    'var(--font-body)',
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function fmtEur(n: number) {
-  return `€\u202f${Math.round(n).toLocaleString('de-DE')}`;
-}
-
-function fmtPct(n: number) {
-  return `${n.toFixed(1)}%`;
-}
-
-function capitalize(s: string) {
-  return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-}
-
-// ── Sub-components ────────────────────────────────────────────────────────────
-
-function TemperatureBadge({ temp }: { temp: MarketTemperature }) {
-  const { label, color, bg } = TEMP_CONFIG[temp];
-  return (
-    <span style={{
-      display:         'inline-block',
-      padding:         '4px 12px',
-      borderRadius:    6,
-      fontSize:        12,
-      fontWeight:      600,
-      letterSpacing:   '0.05em',
-      textTransform:   'uppercase',
-      fontFamily:      'var(--font-body)',
-      color,
-      backgroundColor: bg,
-      border:          `1px solid color-mix(in srgb, ${color} 30%, transparent)`,
-    }}>
-      {label}
-    </span>
-  );
-}
-
-function TextBadge({ value }: { value: string }) {
-  const cfg   = BADGE_CONFIG[value];
-  const color = cfg?.color ?? 'var(--color-text-secondary)';
-  const bg    = cfg?.bg    ?? 'var(--color-bg-elevated)';
-  const label = cfg?.label ?? capitalize(value);
-  return (
-    <span style={{
-      display:         'inline-block',
-      padding:         '4px 12px',
-      borderRadius:    6,
-      fontSize:        12,
-      fontWeight:      600,
-      letterSpacing:   '0.05em',
-      textTransform:   'uppercase',
-      fontFamily:      'var(--font-body)',
-      color,
-      backgroundColor: bg,
-      border:          `1px solid color-mix(in srgb, ${color} 30%, transparent)`,
-    }}>
-      {label}
-    </span>
-  );
-}
-
-function TagPill({ label, variant = 'neutral' }: { label: string; variant?: 'neutral' | 'success' | 'danger' }) {
-  const VARIANT_MAP = {
-    neutral: { color: 'var(--color-text-secondary)', bg: 'var(--color-bg-elevated)', border: 'var(--color-border)'  },
-    success: { color: 'var(--color-success)',         bg: 'var(--color-success-bg)',  border: 'var(--color-success)' },
-    danger:  { color: 'var(--color-danger)',          bg: 'var(--color-danger-bg)',   border: 'var(--color-danger)'  },
-  };
-  const { color, bg, border } = VARIANT_MAP[variant];
-  return (
-    <span style={{
-      display:         'inline-block',
-      padding:         '6px 14px',
-      borderRadius:    20,
-      fontSize:        13,
-      fontFamily:      'var(--font-body)',
-      color,
-      backgroundColor: bg,
-      border:          `1px solid color-mix(in srgb, ${border} 40%, transparent)`,
-    }}>
-      {label}
-    </span>
-  );
-}
-
-// ── PropertyCard ──────────────────────────────────────────────────────────────
-
-function PropertyCard({
-  property,
-  navigate,
-}: {
-  property: Property;
-  navigate: (path: string) => void;
-}) {
-  const {
-    id, url, title, price, area_sqm, rooms, city, zip_code,
-    image_url, gross_yield, price_per_sqm, days_listed, compact_analysis,
-  } = property;
-
-  const location = [city, zip_code].filter(Boolean).join(' · ') || 'Location unknown';
-
-  const daysBg =
-    days_listed === undefined ? undefined
-    : days_listed > 60        ? 'var(--color-danger)'
-    : days_listed > 30        ? 'var(--color-warning)'
-    :                           'rgba(0,0,0,0.50)';
-
-  const yieldColor = gross_yield && gross_yield >= 5
-    ? 'var(--color-success)'
-    : 'var(--color-text-primary)';
-
-  return (
-    <div
-      className="market-prop-card"
-      role="link"
-      tabIndex={0}
-      onClick={() => navigate(`/properties/${id}`)}
-      onKeyDown={(e) => e.key === 'Enter' && navigate(`/properties/${id}`)}
-    >
-      {/* Image */}
-      <div style={{ position: 'relative', aspectRatio: '16/9', flexShrink: 0 }}>
-        {image_url ? (
-          <img
-            src={image_url}
-            alt={title ?? 'Property'}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          />
-        ) : (
-          <div style={{
-            width: '100%', height: '100%',
-            background: 'var(--color-bg-subtle)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 36,
-          }}>
-            🏢
-          </div>
-        )}
-
-        {compact_analysis?.verdict && (
-          <div style={{ position: 'absolute', top: 10, left: 10 }}>
-            <VerdictBadge verdict={compact_analysis.verdict} />
-          </div>
-        )}
-
-        {days_listed !== undefined && (
-          <div style={{
-            position: 'absolute', top: 10, right: 10,
-            background: daysBg, color: '#fff',
-            fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-body)',
-            padding: '3px 8px', borderRadius: 20, letterSpacing: '0.02em',
-          }}>
-            {days_listed}d
-          </div>
-        )}
-      </div>
-
-      {/* Body */}
-      <div style={{ padding: 16, flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-          <span style={{
-            fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 400,
-            color: 'var(--color-text-primary)',
-          }}>
-            {price ? fmtEur(price) : '—'}
-          </span>
-          {price_per_sqm !== undefined && (
-            <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--color-text-muted)' }}>
-              {price_per_sqm.toLocaleString('de-DE')} €/m²
-            </span>
-          )}
-        </div>
-
-        <div style={{
-          fontSize: 15, fontWeight: 600, lineHeight: 1.4,
-          color: 'var(--color-text-primary)', fontFamily: 'var(--font-body)',
-          display: '-webkit-box', WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical', overflow: 'hidden',
-        }}>
-          {title ?? 'Property Listing'}
-        </div>
-
-        <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', fontFamily: 'var(--font-body)' }}>
-          📍 {location}
-        </div>
-
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
-          {area_sqm !== undefined && (
-            <span style={{ fontSize: 12, fontFamily: 'var(--font-body)', background: 'var(--color-bg-elevated)', color: 'var(--color-text-secondary)', padding: '3px 8px', borderRadius: 6 }}>
-              {area_sqm}m²
-            </span>
-          )}
-          {rooms !== undefined && (
-            <span style={{ fontSize: 12, fontFamily: 'var(--font-body)', background: 'var(--color-bg-elevated)', color: 'var(--color-text-secondary)', padding: '3px 8px', borderRadius: 6 }}>
-              {rooms} Zi.
-            </span>
-          )}
-        </div>
-
-        <div style={{ borderTop: '1px solid var(--color-border)', margin: '4px 0' }} />
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          <div>
-            <div style={{ fontSize: 10, fontFamily: 'var(--font-body)', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>
-              Gross Yield
-            </div>
-            <div style={{ fontSize: 20, fontFamily: 'monospace', fontWeight: 600, color: yieldColor }}>
-              {gross_yield !== undefined ? fmtPct(gross_yield) : '—'}
-            </div>
-          </div>
-          <div>
-            <div style={{ fontSize: 10, fontFamily: 'var(--font-body)', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>
-              €/m²
-            </div>
-            <div style={{ fontSize: 20, fontFamily: 'monospace', fontWeight: 600, color: 'var(--color-text-primary)' }}>
-              {price_per_sqm !== undefined ? price_per_sqm.toLocaleString('de-DE') : '—'}
-            </div>
-          </div>
-        </div>
-
-        {compact_analysis?.one_line_summary && (
-          <div style={{
-            fontSize: 13, fontStyle: 'italic',
-            color: 'var(--color-text-secondary)', fontFamily: 'var(--font-body)', lineHeight: 1.5,
-            display: '-webkit-box', WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical', overflow: 'hidden',
-          }}>
-            {compact_analysis.one_line_summary}
-          </div>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div style={{ padding: '10px 16px', borderTop: '1px solid var(--color-border)' }}>
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          style={{
-            fontSize: 13, fontFamily: 'var(--font-body)',
-            color: 'var(--color-text-secondary)',
-            textDecoration: 'none',
-          }}
-        >
-          View on ImmoScout ↗
-        </a>
-      </div>
-    </div>
-  );
-}
-
 // ── MarketPage ────────────────────────────────────────────────────────────────
 
 export function MarketPage() {
@@ -440,22 +138,31 @@ export function MarketPage() {
   const [data,    setData]    = useState<MarketData | null>(null);
   const [loading, setLoading] = useState(true);
   const [empty,   setEmpty]   = useState(false);
+  const [error,   setError]   = useState<string | null>(null);
 
   useEffect(() => {
     if (!city) return;
+    let isCancelled = false;
+
     setLoading(true);
     setEmpty(false);
+    setError(null);
     api.get<MarketData>(`/api/analysis/market/${encodeURIComponent(city)}`).then(res => {
-      if (res.data) {
+      if (isCancelled) return;
+      if (res.error) {
+        setError(res.error);
+      } else if (res.data) {
         setData(res.data);
       } else {
         setEmpty(true);
       }
       setLoading(false);
     });
+
+    return () => { isCancelled = true; };
   }, [city]);
 
-  const displayCity = city.charAt(0).toUpperCase() + city.slice(1);
+  const displayCity = city.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('-');
 
   // ── Loading ──────────────────────────────────────────────────────────────
   if (loading) {
@@ -469,6 +176,18 @@ export function MarketPage() {
             {Array.from({ length: 5 }, (_, i) => <LoadingState key={i} height={102} borderRadius={12} />)}
           </div>
           {Array.from({ length: 4 }, (_, i) => <LoadingState key={i} height={180} borderRadius={12} />)}
+        </div>
+      </>
+    );
+  }
+
+  // ── Error state ──────────────────────────────────────────────────────────
+  if (error) {
+    return (
+      <>
+        <style>{PAGE_STYLES}</style>
+        <div style={{ marginTop: 48 }}>
+          <EmptyState icon="⚠" title="Something went wrong" description={error} />
         </div>
       </>
     );
@@ -718,7 +437,7 @@ export function MarketPage() {
           </p>
           <div className="market-prop-grid">
             {data.properties.map(p => (
-              <PropertyCard key={p.id} property={p} navigate={navigate} />
+              <MarketPropertyCard key={p.id} property={p} navigate={navigate} />
             ))}
           </div>
         </div>
