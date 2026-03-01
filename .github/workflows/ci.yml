@@ -1,0 +1,25 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Basic sanity checks
+        run: |
+          test -f index.html
+          test -d src
+          echo "OK: index.html exists and src/ exists"
+
+      - name: Prevent committing common secret files
+        run: |
+          if find . -maxdepth 3 -type f \( -name "*.pem" -o -name ".env" -o -name ".env.*" \) | grep -q .; then
+            echo "Found .env or .pem file committed. Remove it."
+            exit 1
+          fi
