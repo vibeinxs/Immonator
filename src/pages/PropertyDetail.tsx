@@ -5,8 +5,9 @@ import { EmptyState }   from '../components/common/EmptyState';
 import { LoadingState } from '../components/common/LoadingState';
 import { MetricCard }   from '../components/common/MetricCard';
 import { ContextHint }  from '../components/common/ContextHint';
-import { VerdictBadge, type Verdict } from '../components/common/VerdictBadge';
+import { type Verdict } from '../components/common/VerdictBadge';
 import { Toast }        from '../components/common/Toast';
+import { CompactAnalysisCard } from '../components/analysis/CompactAnalysisCard';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -246,16 +247,7 @@ function StubCard({ icon, label, sub }: { icon: string; label: string; sub: stri
   );
 }
 
-function CompactAnalysisCard({ propertyId }: { propertyId: string }) {
-  void propertyId;
-  return (
-    <StubCard
-      icon="🤖"
-      label="Compact Analysis"
-      sub="AI-powered quick verdict — component coming soon"
-    />
-  );
-}
+// CompactAnalysisCard is imported from ../components/analysis/CompactAnalysisCard
 
 function DeepAnalysisReport({ propertyId }: { propertyId: string }) {
   void propertyId;
