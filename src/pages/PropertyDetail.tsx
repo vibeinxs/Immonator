@@ -11,6 +11,7 @@ import { CompactAnalysisCard } from '../components/analysis/CompactAnalysisCard'
 import { AnalysisChat }        from '../components/chat/AnalysisChat';
 import { DeepAnalysisReport }  from '../components/analysis/DeepAnalysisReport';
 import { MarketAnalysisCard }  from '../components/analysis/MarketAnalysisCard';
+import { ScenarioModeller }    from '../components/analysis/ScenarioModeller';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -256,24 +257,7 @@ function StubCard({ icon, label, sub }: { icon: string; label: string; sub: stri
 
 // MarketAnalysisCard is imported from ../components/analysis/MarketAnalysisCard
 
-function ScenarioModeller({
-  propertyId,
-  askingPrice,
-  monthlyRent,
-}: {
-  propertyId:   string;
-  askingPrice:  number;
-  monthlyRent:  number;
-}) {
-  void propertyId; void askingPrice; void monthlyRent;
-  return (
-    <StubCard
-      icon="📐"
-      label="Scenario Modeller"
-      sub="Adjust purchase price, rent, vacancy, and leverage — component coming soon"
-    />
-  );
-}
+// ScenarioModeller is imported from ../components/analysis/ScenarioModeller
 
 // AnalysisChat is imported from ../components/chat/AnalysisChat
 
