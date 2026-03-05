@@ -15,7 +15,8 @@ jobs:
         run: |
           test -f index.html
           test -d src
-          echo "OK: index.html exists and src/ exists"
+          test -f CLAUDE.md
+          echo "OK: index.html, src/, and CLAUDE.md exist"
 
       - name: Prevent committing common secret files
         run: |
